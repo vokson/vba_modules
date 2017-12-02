@@ -19,6 +19,98 @@ Private Sub Class_Terminate()
     Set math = Nothing
 End Sub
 
+' Таблица Д.1
+' isDrivenPile - (true - забивная свая, false - набивная, буровая, свая-оболочка, свая-столб) As Boolean
+' soil As C_Soil - объект грунта
+Public Function E1(isDrivenPile As Boolean, soil As C_Soil) As Double
+  Dim values As New Dictionary
+
+  values.Item("CLAY_IL") = Array(0, 0.5, 0.75, 1.0)
+  values.Item("CLAY_DRIVEN") = Array(8000, 5000, 2500, 650)
+  values.Item("CLAY_NONDRIVEN") = Array(6000, 4000, 2000, 500)
+
+  values.Item("CLAY_SANDY_IL") = Array(0, 1.0)
+  values.Item("CLAY_SANDY_DRIVEN") = Array(5000, 2500)
+  values.Item("CLAY_SANDY_NONDRIVEN") = Array(4000, 2000)
+
+  values.Item("SAND_FINE_e") = Array(0.6, 0.8)
+  values.Item("SAND_FINE_DRIVEN") = Array(5000, 2500)
+  values.Item("SAND_FINE_NONDRIVEN") = Array(4000, 2000)
+
+  values.Item("SAND_SMALL_e") = Array(0.6, 0.75)
+  values.Item("SAND_SMALL_DRIVEN") = Array(8000, 5000)
+  values.Item("SAND_SMALL_NONDRIVEN") = Array(6000, 4000)
+
+  values.Item("SAND_MIDDLE_e") = Array(0.55, 0.70)
+  values.Item("SAND_MIDDLE_DRIVEN") = values.Item("SAND_SMALL_DRIVEN")
+  values.Item("SAND_MIDDLE_NONDRIVEN") = values.Item("SAND_SMALL_NONDRIVEN")
+
+  values.Item("SAND_COARSE_e") = Array(0.55, 0.70)
+  values.Item("SAND_COARSE_DRIVEN") = Array(13000, 8000)
+  values.Item("SAND_COARSE_NONDRIVEN") = Array(10000, 6000)
+
+  values.Item("SAND_GRAVELOUS_e") = Array(0.55, 0.70)
+  values.Item("SAND_GRAVELOUS_DRIVEN") = Array(0, 0)
+  values.Item("SAND_GRAVELOUS_NONDRIVEN") = Array(20000, 10000)
+
+  values.Item("MACROFRAGMENTAL_GRAVEL_DRIVEN") = 0
+  values.Item("MACROFRAGMENTAL_GRAVEL_NONDRIVEN") = 20000
+  values.Item("MACROFRAGMENTAL_COBBLES_DRIVEN") = 0
+  values.Item("MACROFRAGMENTAL_COBBLES_NONDRIVEN") = 20000
+
+  E1 = 0#
+
+  Dim drivenText As String
+  Dim soilText As String
+
+  if isDrivenPile Then drivenText = "_DRIVEN" Else drivenText = "_NONDRIVEN"
+  soilText = ""
+
+  
+  Select Case soil.TypeBySize
+      Case "КРУПНООБЛОМОЧНЫЙ":
+
+        soilText = "MACROFRAGMENTAL_"
+
+        Select Case soil.SubtypeBySize
+          Case "ГАЛЕЧНЫЙ": soilText = soilText & "COBBLES"
+          Case "ГРАВИЙНЫЙ": soilText = soilText & "GRAVEL"
+        End Select
+
+        E1 = values.Item(soilText & drivenText)
+        
+      Case "ПЕСОК":
+
+        soilText = "SAND_"
+
+        Select Case soil.SubtypeBySize
+          Case "ПЫЛЕВАТЫЙ": soilText = soilText & "FINE"
+          Case "МЕЛКИЙ": soilText = soilText & "SMALL"
+          Case "СРЕДНЕЙ КРУПНОСТИ": soilText = soilText & "MIDDLE"
+          Case "КРУПНЫЙ": soilText = soilText & "COARSE"
+          Case "ГРАВЕЛИСТЫЙ": soilText = soilText & "GRAVELOUS"
+        End Select
+
+        E1 = CDbl(math.interpolateOneDimensionalArray( _ 
+                soil.VoidRatio, _
+                values.Item(soilText & "_e"), _
+                values.Item(soilText & drivenText)))
+
+        If soil.TypeByDensity = "ПЛОТНЫЙ" Then E1 = E1 * 1.3
+
+      Case "ГЛИНА", "СУГЛИНОК", "СУПЕСЬ":
+        soilText = "CLAY"
+        if soil.TypeBySize = "СУПЕСЬ" Then soilText = "CLAY_SANDY"
+
+        E1 = CDbl(math.interpolateOneDimensionalArray( _ 
+                soil.LiquidityIndex, _
+                values.Item(soilText & "_IL"), _
+                values.Item(soilText & drivenText)))
+
+  End Select
+  
+End Function
+
 ' Таблица Д.2
 ' pileCase As Integer
 '    0 - опирание сваи на дисперсный грунт
@@ -27,7 +119,7 @@ End Sub
 ' length As Double
 ' parameter As String - "A0", "B0", "C0" (англ.)
 Public Function E2(pileCase As Integer, length As Double, parameter As String) As Double
-Dim values As New Dictionary
+  Dim values As New Dictionary
 
   If Not (pileCase = 0 Or pileCase = 1 Or pileCase = 2) Then
     MsgBox "SP50.102.2003 Table E.2 - pileCase - ERROR"
@@ -59,7 +151,7 @@ End Function
 ' z As Double
 ' parameter As String - "A1", "B1", "C1", "D1", "A3", "B3", "C3", "D3", "A4", "B4", "C4", "D4" (англ.)
 Public Function E3(z As Double, parameter As String) As Double
-Dim values As New Dictionary
+  Dim values As New Dictionary
 
   If  parameter <> "A1" And parameter <> "B1" And parameter <> "C1" And parameter <> "D1" And _
       parameter <> "A3" And parameter <> "B3" And parameter <> "C3" And parameter <> "D3" And _
@@ -86,3 +178,4 @@ Dim values As New Dictionary
   E3 = CDbl(math.interpolateOneDimensionalArray(z, values.Item("z"), values.Item(parameter)))
     
 End Function
+

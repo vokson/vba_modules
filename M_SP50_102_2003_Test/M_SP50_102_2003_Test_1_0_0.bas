@@ -1,6 +1,30 @@
 Attribute VB_Name = "M_SP50_102_2003_Test"
 Option Explicit
 
+Public Function getTablesE1( _
+        isDrivenPile As Boolean, _
+        typeOfSoil As String, _
+        subtypeOfSoil As String, _
+        densityType As String, _
+        IL As Double, _
+        e As Double _
+    ) As Double 'êÍ/ì4
+
+    Dim sp As New C_SP50_102_2003
+    Dim soil As New C_Soil
+
+    soil.TypeBySize = typeOfSoil
+    soil.SubtypeBySize = subtypeOfSoil
+    soil.TypeByDensity = densityType
+    soil.LiquidityIndex = IL
+    soil.VoidRatio = e
+
+    getTablesE1 = sp.Tables.E1(isDrivenPile, soil)
+
+    Set sp = Nothing
+    Set soil = Nothing
+End Function
+
 Public Function getTablesE2(pileCase As Integer, length As Double, parameter As String) As Double
    Dim sp As New C_SP50_102_2003
     getTablesE2 = sp.Tables.E2(pileCase, length, parameter)
