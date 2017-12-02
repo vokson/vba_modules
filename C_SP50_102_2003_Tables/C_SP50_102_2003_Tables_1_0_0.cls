@@ -19,6 +19,7 @@ Private Sub Class_Terminate()
     Set math = Nothing
 End Sub
 
+' Таблица Д.2
 ' pileCase As Integer
 '    0 - опирание сваи на дисперсный грунт
 '    1 - опирание сваи на скальный грунт
@@ -54,6 +55,7 @@ Dim values As New Dictionary
     
 End Function
 
+' Таблица Д.3
 ' z As Double
 ' parameter As String - "A1", "B1", "C1", "D1", "A3", "B3", "C3", "D3", "A4", "B4", "C4", "D4" (англ.)
 Public Function E3(z As Double, parameter As String) As Double
