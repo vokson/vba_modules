@@ -9,6 +9,10 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = True
 Option Explicit
 
+Function pi() As Double
+    pi = 3.14159265358979
+End Function
+
 ' Интерполяция по двум одномерным сортированным массивам одинаковой длины
 ' valueArray - массив с исходными величинами
 ' value - величина, для которой необходимо найти
