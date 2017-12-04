@@ -109,3 +109,17 @@ Public Function getFormulasE19( _
     getFormulasE19 = sp.Formulas.E19(K, alpha_e, z, E, I, U0, W0, M0, H0, A1, B1, C1, D1)
     Set sp = Nothing
 End Function
+
+Public Function getFormulasE23( _
+        H As Double, _
+        L0 As Double, _ 
+        E As Double, _
+        I As Double, _
+        eMH As Double, _
+        eMM As Double _
+    ) As Double ' Íœ‡
+
+    Dim sp As New C_SP50_102_2003
+    getFormulasE23 = sp.Formulas.E23(H, L0, E, I, eMH, eMM)
+    Set sp = Nothing
+End Function

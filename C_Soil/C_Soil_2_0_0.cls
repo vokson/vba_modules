@@ -9,7 +9,7 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = True
 Option Explicit
 
-' Дисперсный грунт с определением свойств по ГОСТ 25100-2011
+' Дисперсный или мерзлый грунт с определением свойств по ГОСТ 25100-2011
 
 Private Const WATER_DENSITY = 1# 'г/см3
 
@@ -90,8 +90,9 @@ Private pSolidParticlesDensity As Double 'Плотность частиц грунта (Ps) - г/см3
 Private pWaterContent As Double 'Природная влажность грунта (W) - %
 Private pPlasticLimit As Double 'Граница раскатывания (WP) - %
 Private pLiquidLimit As Double 'Граница текучести (WL) - %
-Private pLiquidityIndex As Double ' Коэффициент водонасыщения (IL) - %
-Private pPlasticityIndex As Double ' Коэффициент водонасыщения (IP) - %
+private pDegreeOfSaturation As Double 'Коэффициент водонасыщения (Sr) - д.е.
+Private pLiquidityIndex As Double ' Показатель текучести (IL) - %
+Private pPlasticityIndex As Double ' Число пластичности (IP) - %
 Private pVoidRatio As Double ' Коэффициент пористости (e) - д.е.
 Private topSizeLimit, bottomSizeLimit, percentsBySize
 
@@ -100,6 +101,36 @@ Private Sub Class_Initialize()
       bottomSizeLimit = Array(800, 400, 200, 100, 60, 10, 5, 2, 1, 0.5, 0.25, 0.1, 0.05, 0.01, 0.002, 0)
       percentsBySize = Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 End Sub
+
+Public Function DeepCopy() As C_Soil
+    Dim other As New C_Soil
+
+    other.name = Me.name
+    other.ClassOfSoil = Me.ClassOfSoil
+    other.TypeBySize = Me.TypeBySize
+    other.SubtypeBySize = Me.SubtypeBySize
+    other.TypeByLiquidityIndex = Me.TypeByLiquidityIndex
+    other.TypeByDensity = Me.TypeByDensity
+    other.YoungModulus = Me.YoungModulus
+    other.SoilDensity = Me.SoilDensity
+    other.SoilDensity_1 = Me.SoilDensity_1
+    other.SoilDensity_2 = Me.SoilDensity_2
+    other.SpecificCohesion = Me.SpecificCohesion
+    other.SpecificCohesion_1 = Me.SpecificCohesion_1
+    other.SpecificCohesion_2 = Me.SpecificCohesion_2
+    other.InternalFrictionAngle = Me.InternalFrictionAngle
+    other.InternalFrictionAngle_1 = Me.InternalFrictionAngle_1
+    other.InternalFrictionAngle_2 = Me.InternalFrictionAngle_2
+    other.VoidRatio = Me.VoidRatio
+    other.DegreeOfSaturation = Me.DegreeOfSaturation
+    other.WaterContent = Me.WaterContent
+    other.PlasticLimit = Me.PlasticLimit
+    other.LiquidLimit = Me.LiquidLimit
+    other.PlasticityIndex = Me.PlasticityIndex
+    other.LiquidityIndex = Me.LiquidityIndex
+
+    Set DeepCopy = other
+End Function
    
 Public Property Get name() As String
     name = pSoilName
@@ -225,11 +256,19 @@ Public Property Let WaterContent(W As Double)
     pWaterContent = W
 End Property
 
+Public Property Get DegreeOfSaturation() As Double
+    DegreeOfSaturation = pDegreeOfSaturation
+End Property
+
+Public Property Let DegreeOfSaturation(value As Double)
+    pDegreeOfSaturation = value
+End Property
+
 ' Коэффициент водонасыщения (Sr) - д.е.
 ' ГОСТ 25100-2011, формула А.1
-Public Property Get DegreeOfSaturation() As Double
-    DegreeOfSaturation = 0.01 * WaterContent * SolidParticlesDensity / VoidRatio / WATER_DENSITY
-End Property
+Public Sub AutoDegreeOfSaturation()
+    pDegreeOfSaturation = 0.01 * WaterContent * SolidParticlesDensity / VoidRatio / WATER_DENSITY
+End Sub
 
 Public Property Get PlasticLimit() As Double
     PlasticLimit = pPlasticLimit
@@ -565,6 +604,7 @@ End Property
 
 ' Автоматическое определение всех разновидностей
 Public Sub AssignTypesAutomatically()
+    Call AutoDegreeOfSaturation
     Call AutoPlasticityIndex
     Call AutoLiquidityIndex
     Call AutoVoidRatio

@@ -132,3 +132,22 @@ Public Function E19( _
     E19 = K * z / alpha_e * (U0 * A1 - W0 * B1 / alpha_e + M0 * C1 / alpha_e ^ 2 / E / I + _ 
             H0 * D1 / alpha_e ^ 3 / E / I)
 End Function
+
+' ‘ормула ƒ.19
+' H [кЌ]
+' L0 [м]
+' E [кѕа]
+' I [м4]
+' eMH [1/кЌ]
+' eMM [1/кЌ*м]
+Public Function E23( _
+        H As Double, _
+        L0 As Double, _ 
+        E As Double, _
+        I As Double, _
+        eMH As Double, _
+        eMM As Double _
+    ) As Double ' кЌ*м
+
+    E23 = -H * (eMH + L0 * eMM + L0 ^ 2 / 2 / E / I) / (eMM + L0 / E / I)
+End Function
