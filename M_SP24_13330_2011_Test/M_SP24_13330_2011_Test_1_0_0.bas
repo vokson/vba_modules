@@ -152,3 +152,50 @@ Function getTable7_16_B2i(fs As Double, typeOfZond As Integer, isSand As Boolean
     getTable7_16_B2i = sp.Tables.t7_16_B2i (fs, typeOfZond, isSand)
     Set sp = Nothing
 End Function  
+
+Function getFormula7_26(B1 As Double, qs As Double) As Double
+    Dim sp As New C_SP24_13330_2011
+    getFormula7_26 = sp.Formulas.f7_26 (B1, qs)
+    Set sp = Nothing
+End Function
+
+Function getFormula7_28(sum_Bi_Fsi_Hi As Double, h As Double) As Double
+    Dim sp As New C_SP24_13330_2011
+    getFormula7_28 = sp.Formulas.f7_28(sum_Bi_Fsi_Hi, h)
+    Set sp = Nothing
+End Function
+
+Function getFormula7_32(force As Double, betta As Double, G1 As Double, length As Double) As Double
+
+    Dim sp As New C_SP24_13330_2011
+    getFormula7_32 = sp.Formulas.f7_32(force, betta, G1, length)
+    Set sp = Nothing
+
+End Function
+
+Function getFormula7_33(G1 As Double, G2 As Double, nu1 As Double, nu2 As Double, _
+                            EA As Double, d As Double, length As Double) As Double
+   
+    Dim sp As New C_SP24_13330_2011
+    getFormula7_33 = sp.Formulas.f7_33(G1, G2, nu1, nu2, EA, d, length)
+    Set sp = Nothing
+   
+End Function
+
+Function getFormula7_34(ksi As Double) As Double
+    Dim sp As New C_SP24_13330_2011
+    getFormula7_34 = sp.Formulas.f7_34(ksi)
+    Set sp = Nothing
+End Function
+
+Function getFormula7_35(nu As Double) As Double
+    Dim sp As New C_SP24_13330_2011
+    getFormula7_35 = sp.Formulas.f7_35(nu)
+    Set sp = Nothing
+End Function
+
+Function getClause7_4_3(e As Double, nu As Double) As Double
+    Dim sp As New C_SP24_13330_2011
+    getClause7_4_3 = sp.Clauses.c7_4_3(e, nu)
+    Set sp = Nothing
+End Function
