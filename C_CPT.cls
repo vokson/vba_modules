@@ -27,6 +27,8 @@ Property Let layerFrontResistance(dArray As Variant)
     pLayerFrontResistance = dArray
 End Property
 
+' ##############################
+
 Public Property Get getSideFrictionAtDepth(depth As Double) As String
     
     Dim i As Integer

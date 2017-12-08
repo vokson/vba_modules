@@ -14,7 +14,7 @@ Function pi() As Double
 End Function
 
 ' Интерполяция по двум одномерным сортированным массивам одинаковой длины
-' valueArray - массив с исходными величинами
+' valueArray - массив с исходными величинами, сортированный по возрастанию
 ' value - величина, для которой необходимо найти
 ' resultArray - массив значений
 Function interpolateOneDimensionalArray(value, valueArray, resultArray) As Variant
@@ -39,5 +39,22 @@ Function interpolateOneDimensionalArray(value, valueArray, resultArray) As Varia
         Next k
     
     End If
+    
+End Function
+
+' Нахождение индекса элемента, значение которого >= value
+' valueArray - массив с исходными величинами, сортированный по возрастанию
+' value - величина, для которой необходимо найти
+Function findIdexOfFirstElementNotLessThan(value, sortedArray) As Integer
+    
+    If Not IsArray(sortedArray) Then Exit Function
+    
+    Dim k As Long
+    For k = LBound(sortedArray) To UBound(sortedArray)
+        If (sortedArray(k) >= value) Then
+            findIdexOfFirstElementNotLessThan = k
+            Exit Function
+        End If
+    Next k
     
 End Function
