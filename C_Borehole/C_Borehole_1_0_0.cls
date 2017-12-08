@@ -51,14 +51,13 @@ End Property
 Public Sub addLayer(name As String, bottomOfLayer As Double)
 
     If bottomOfLayer <=0 Then
-        MsgBox "C_Borehole - Bottom of layer must be > 0", vbOK, "ERROR"
+        MsgBox "C_Borehole - Bottom of layer " & name & " must be > 0. Borehole " & nameOfBorehole, vbOK, "ERROR"
         Exit Sub
     End If
 
-    countOfLayers = countOfLayers + 1
-
     ReDim Preserve pLayerDepth(countOfLayers)
     ReDim Preserve pLayerName(countOfLayers)
+    countOfLayers = countOfLayers + 1
 
     pLayerDepth(UBound(pLayerDepth)) = bottomOfLayer
     pLayerName(UBound(pLayerName)) = name
@@ -82,3 +81,18 @@ Public Property Get getSoilNameAtDepth(depth As Double) As String
     Next i
     
 End Property
+
+Public Function DeepCopy() As C_Borehole
+    Dim other As New C_Borehole
+
+    other.nameOfBorehole = Me.nameOfBorehole
+    other.topElevation = Me.topElevation
+    other.waterDepth = Me.waterDepth
+
+    Dim i As Integer
+    For i = LBound(pLayerDepth) To UBound(pLayerDepth)
+        Call other.addLayer(pLayerName(i), pLayerDepth(i))
+    Next i
+
+    Set DeepCopy = other
+End Function
