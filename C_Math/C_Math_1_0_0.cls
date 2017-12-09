@@ -58,3 +58,17 @@ Function findIdexOfFirstElementNotLessThan(value, sortedArray) As Integer
     Next k
     
 End Function
+
+' Определяет равны ли два массива друг другу
+Public Function isArraysSame(array1, array2) As Boolean
+    isArraysSame = True
+
+    Dim i As Integer
+    For i = LBound(array1) to UBound(array1)
+        If array1(i) <> array2(i) Then
+            isArraysSame = False
+            Exit Function
+        End If
+    Next i
+
+End Function

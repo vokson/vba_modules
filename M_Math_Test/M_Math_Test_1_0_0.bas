@@ -89,3 +89,44 @@ Public Sub testFindIdexOfFirstElementNotLessThan()
 
     Set math = Nothing
 End Sub
+
+Public Sub testIsArraysSame()
+    Dim math
+    Set math = New C_Math
+    
+    Dim arr1() As Variant: arr1 = Array(10, 20, 30, 40, 50)
+    Dim arr2() As Variant: arr2 = Array(10#, 20#, 30#, 40#, 50#)
+    Dim arr3() As Variant: arr3 = Array(10.1, 20#, 30#, 40#, 50#)
+    Dim arr4() As Variant: arr4 = Array("10", 20#, 30#, 40#, 50#)
+    Dim arr5() As Variant: arr5 = Array(True, 20#, 30#, 40#, 50#)
+    
+    Debug.Print "interpolateOneDimensionalArray: TEST 01"
+    If math.isArraysSame(arr1, arr2) =True Then
+        Debug.Print "PASSED"
+    Else
+        Debug.Print "FAILED"
+    End If
+
+    Debug.Print "interpolateOneDimensionalArray: TEST 02"
+    If math.isArraysSame(arr1, arr3) = False Then
+        Debug.Print "PASSED"
+    Else
+        Debug.Print "FAILED"
+    End If
+
+    Debug.Print "interpolateOneDimensionalArray: TEST 03"
+    If math.isArraysSame(arr1, arr4) = False Then
+        Debug.Print "PASSED"
+    Else
+        Debug.Print "FAILED"
+    End If
+
+    Debug.Print "interpolateOneDimensionalArray: TEST 04"
+    If math.isArraysSame(arr1, arr5) = False Then
+        Debug.Print "PASSED"
+    Else
+        Debug.Print "FAILED"
+    End If
+    
+    Set math = Nothing
+End Sub
