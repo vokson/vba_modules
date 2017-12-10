@@ -50,8 +50,8 @@ End Property
 ' Добавление слоя
 Public Sub addLayer(depth As Double, FR As Double, SF As Double)
 
-    If depth <=0 Then
-        MsgBox "C_CPT - Depth " & depth & " <= 0. Borehole " & nameOfBorehole, vbOK, "ERROR"
+    If depth < 0 Then
+        MsgBox "C_CPT - Depth " & depth & " < 0. Borehole " & nameOfBorehole, vbOK, "ERROR"
         Exit Sub
     End If
 
@@ -72,10 +72,14 @@ Public Function DeepCopy() As C_CPT
     other.nameOfBorehole = Me.nameOfBorehole
     other.topElevation = Me.topElevation
 
-    Dim i As Integer
-    For i = LBound(pLayerDepth) To UBound(pLayerDepth)
-        Call other.addLayer(pLayerDepth(i), pLayerFrontResistance(i), pLayerSideFriction(i))
-    Next i
+    If (Not Not pLayerDepth) <> 0 Then ' Array has been initialized, so you're good to go.
+    
+        Dim i As Integer
+        For i = LBound(pLayerDepth) To UBound(pLayerDepth)
+            Call other.addLayer(pLayerDepth(i), pLayerFrontResistance(i), pLayerSideFriction(i))
+        Next i
+
+    End if
 
     Set DeepCopy = other
 End Function

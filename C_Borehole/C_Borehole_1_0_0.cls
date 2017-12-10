@@ -89,10 +89,14 @@ Public Function DeepCopy() As C_Borehole
     other.topElevation = Me.topElevation
     other.waterDepth = Me.waterDepth
 
-    Dim i As Integer
-    For i = LBound(pLayerDepth) To UBound(pLayerDepth)
-        Call other.addLayer(pLayerName(i), pLayerDepth(i))
-    Next i
+    If (Not Not pLayerDepth) <> 0 Then ' Array has been initialized, so you're good to go.
+
+        Dim i As Integer
+        For i = LBound(pLayerDepth) To UBound(pLayerDepth)
+            Call other.addLayer(pLayerName(i), pLayerDepth(i))
+        Next i
+
+    End if
 
     Set DeepCopy = other
 End Function
