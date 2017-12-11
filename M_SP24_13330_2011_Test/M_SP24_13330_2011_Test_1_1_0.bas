@@ -154,6 +154,14 @@ Function getTable7_7(what As String, Fi As Double, Optional d As Double, Optiona
 
 End Function
 
+Function getTable7_8(h As Double, IL As Double) As Double
+
+    Dim sp As New C_SP24_13330_2011
+    getTable7_8 = sp.Tables.t7_8(h, IL)
+    Set sp = Nothing
+
+End Function
+
 Function getTable7_16_B1(qs As Double, isDrivenPile As Boolean, isCompressed As Boolean, _
     isScrewPileInSandyWaterSaturatedSoil As Boolean) As Double
 

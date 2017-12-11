@@ -375,6 +375,43 @@ Function t7_7_a3(h As Double, d As Double, Fi As Double) As Double
     
 End Function
 
+' СП 24.13330.2011 (изм.1) - Таблица 7.8
+' Для h>20м при IL=0.5 и 0.6 взяты значения, как для IL=0.4
+Function t7_8(h As Double, IL As Double) As Double
+
+    If h <= 0 Then
+        MsgBox "SP 24.13330.2011 Table 7.8 - h must be > 0", vbOk, "ERROR"
+        Exit Function
+    End If
+
+    If h > 20# And IL > 0.4 Then
+        MsgBox "SP 24.13330.2011 Table 7.8 - h and IL are out of table's values", vbOk, "ERROR"
+        Exit Function
+    End If
+    
+    Dim values As New Dictionary
+    
+    values.Item("keyArray1") = Array(3#, 5#, 7#, 10#, 12#, 15#, 18#, 20#, 30#, 40#)
+    values.Item("keyArray2") = Array(0#, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6)
+    values.Item("valueArray") = Array( _
+        Array(850, 750, 650, 500, 400, 300, 250), _
+        Array(1000, 850, 750, 650, 500, 400, 350), _
+        Array(1150, 1000, 850, 750, 600, 500, 450), _
+        Array(1350, 1200, 1050, 950, 800, 700, 600), _
+        Array(1550, 1400, 1250, 1100, 950, 800, 700), _
+        Array(1800, 1650, 1500, 1300, 1100, 1000, 800), _
+        Array(2100, 1900, 1700, 1500, 1300, 1150, 950), _
+        Array(2300, 2100, 1900, 1650, 1450, 1250, 1050), _
+        Array(3300, 3000, 2600, 2300, 2000, 1250, 1050), _
+        Array(4500, 4000, 3500, 3000, 2500, 1250, 1050) _
+    )
+
+    t7_8 = math.interpolateTwoDimensionalArray( _
+        h, IL, values.Item("keyArray1"), values.Item("keyArray2"), values.Item("valueArray") _
+    )
+    
+End Function
+
 ' СП 24.13330.2011 (изм.1) - Таблица 7.7 - Альфа 4
 Function t7_7_a4(d As Double, Fi As Double) As Double
 
