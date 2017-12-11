@@ -72,3 +72,28 @@ Public Function isArraysSame(array1, array2) As Boolean
     Next i
 
 End Function
+
+' ƒвумерна€ интерпол€ци€
+' key1, key2 - ключи в массивах keyArray1, keyArray2
+' keyArray1, keyArray2 - одномерные массив ключей, сортированные по возрастанию
+' valueArray - двумерный массив величин
+' Size(keyArray1, 0) = Size(valueArray, 0)
+' Size(keyArray2, 0) = Size(valueArray, 1)
+Function interpolateTwoDimensionalArray(key1, key2, keyArray1, keyArray2, valueArray) As Variant
+    Dim i As Long
+    Dim newArray
+    ' Dim lengthOfNewArray As Long : lengthOfNewArray = 0
+    
+    If IsArray(keyArray1) And IsArray(keyArray2) And IsArray(valueArray) Then
+
+        ReDim newArray(LBound(keyArray1) To UBound(keyArray1))
+
+        For i = LBound(keyArray1) To UBound(keyArray1)
+            newArray(i) = interpolateOneDimensionalArray(key2, keyArray2, valueArray(i))
+        Next i
+
+        interpolateTwoDimensionalArray = interpolateOneDimensionalArray(key1, keyArray1, newArray)
+    
+    End If
+    
+End Function
