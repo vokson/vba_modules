@@ -176,6 +176,13 @@ Function getTable7_16_B2i(fs As Double, typeOfZond As Integer, isSand As Boolean
     Set sp = Nothing
 End Function  
 
+Function getFormula7_12(Y1 As Double, Y1_ As Double, h As Double, d As Double, _
+         a1 As Double, a2 As Double, a3 As Double, a4 As Double) As Double
+    Dim sp As New C_SP24_13330_2011
+    getFormula7_12 = sp.Formulas.f7_12 (Y1, Y1_, h, d, a1, a2, a3, a4)
+    Set sp = Nothing
+End Function
+
 Function getFormula7_26(B1 As Double, qs As Double) As Double
     Dim sp As New C_SP24_13330_2011
     getFormula7_26 = sp.Formulas.f7_26 (B1, qs)
