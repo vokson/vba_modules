@@ -288,6 +288,20 @@ Public Sub testMergeTwoArrays()
         Debug.Print "FAILED"
     End If
 
+    Debug.Print "makeTestMergeTwoArrays: TEST 03"
+    If math.isArraysSame(math.mergeTwoArrays(arr1, Array()), arr1) = True Then
+        Debug.Print "PASSED"
+    Else
+        Debug.Print "FAILED"
+    End If
+
+    Debug.Print "makeTestMergeTwoArrays: TEST 04"
+    If math.isArraysSame(math.mergeTwoArrays(Array(), arr1), arr1) = True Then
+        Debug.Print "PASSED"
+    Else
+        Debug.Print "FAILED"
+    End If
+
 
     Set math = Nothing
 End Sub

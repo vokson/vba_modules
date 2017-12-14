@@ -116,7 +116,7 @@ End Function
 
 Function mergeTwoArrays(array1, array2) As Variant
     Dim result : result = array1
-    Redim Preserve result (UBound(result) + UBound(array2) - LBound(array2) + 1)
+    Redim Preserve result (LBound(array1) To (UBound(result) + UBound(array2) - LBound(array2) + 1))
 
     Dim i As Long
     Dim k As Long
