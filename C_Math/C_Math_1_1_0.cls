@@ -126,5 +126,5 @@ Function mergeTwoArrays(array1, array2) As Variant
         k = k + 1
     Next i
 
-    makeArrayWithStep = result
+    mergeTwoArrays = result
 End Function
