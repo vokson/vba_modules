@@ -232,3 +232,62 @@ Public Sub testInterpolateTwoDimensionalArray()
 
     Set math = Nothing
 End Sub
+
+Public Sub testMakeArrayWithStep()
+    Dim math
+    Set math = New C_Math
+    
+    Dim array1() As Variant: array1 = Array(1, 2, 3, 4, 5)
+    Dim array2() As Variant: array2 = Array(1, 3, 5, 7, 9, 11)
+    
+    Debug.Print "makeArrayWithStep: TEST 01"
+    If math.isArraysSame(math.makeArrayWithStep(1, 5, 1), array1) = True Then
+        Debug.Print "PASSED"
+    Else
+        Debug.Print "FAILED"
+    End If
+
+    Debug.Print "makeArrayWithStep: TEST 02"
+    If math.isArraysSame(math.makeArrayWithStep(1, 11, 2), array2) = True Then
+        Debug.Print "PASSED"
+    Else
+        Debug.Print "FAILED"
+    End If
+
+    Set math = Nothing
+End Sub
+
+Public Sub testMergeTwoArrays()
+    Dim math
+    Set math = New C_Math
+    
+    Dim arr1 As Variant: arr1 = Array(1, 2, 3)
+    Dim arr2 As Variant: arr2 = Array(5, 6, 7)
+    Dim arr12 As Variant: arr12 = Array(1, 2, 3, 5, 6, 7)
+
+    Dim arr3(1 To 3) As Integer
+    arr3(1) = 1 : arr3(2) = 2 : arr3(3) = 3
+    Dim arr4(1 To 3) As Integer
+    arr4(1) = 5 : arr4(2) = 6 : arr4(3) = 7
+
+    Dim arr34 : arr34 = arr3
+    ReDim Preserve arr34(1 To 6)
+    arr34(4) = 5 : arr34(5) = 6 : arr34(6) = 7
+    
+    Debug.Print "makeTestMergeTwoArrays: TEST 01"
+    If math.isArraysSame(math.mergeTwoArrays(arr1, arr2), arr12) = True Then
+        Debug.Print "PASSED"
+    Else
+        Debug.Print "FAILED"
+    End If
+
+    Debug.Print "makeTestMergeTwoArrays: TEST 02"
+    If math.isArraysSame(math.mergeTwoArrays(arr3, arr4), arr34) = True Then
+        Debug.Print "PASSED"
+    Else
+        Debug.Print "FAILED"
+    End If
+
+
+    Set math = Nothing
+End Sub

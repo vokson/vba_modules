@@ -97,3 +97,34 @@ Function interpolateTwoDimensionalArray(key1, key2, keyArray1, keyArray2, valueA
     End If
     
 End Function
+
+' Создает массив чисел от min до max с шагом pitch
+Function makeArrayWithStep(min As Long, max As Long, pitch As Long) As Long()
+    Dim result() As Long
+    Dim lengthOfArray As Long
+    lengthOfArray = 0
+
+    Dim i As Long
+    For i = min To max Step pitch
+        Redim Preserve result(lengthOfArray)
+        result(UBound(result)) = i
+        lengthOfArray = lengthOfArray + 1
+    Next i
+
+    makeArrayWithStep = result
+End Function
+
+Function mergeTwoArrays(array1, array2) As Variant
+    Dim result : result = array1
+    Redim Preserve result (UBound(result) + UBound(array2) - LBound(array2) + 1)
+
+    Dim i As Long
+    Dim k As Long
+    k = LBound(array2)
+    For i = UBound(array1) + 1 To Ubound(result)
+        result(i) = array2(k)
+        k = k + 1
+    Next i
+
+    makeArrayWithStep = result
+End Function
