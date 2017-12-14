@@ -47,13 +47,14 @@ Function makeArrayFromList(s As String) As Long()
 
     ElseIf textArray(i) = "r" Then
       min = result(UBound(result))
-      max = CLng(result(i + 1))
-      pitch = CLng(result(i + 2))
+      max = CLng(textArray(i + 1))
+      pitch = CLng(textArray(i + 2))
       additive = math.makeArrayWithStep(min + pitch, max, pitch)
       i = i + 3
 
     Else
-      additive = Array(CLng(textArray(i)))
+      min = CLng(textArray(i))
+      additive = math.makeArrayWithStep(min, min, 1)
       i = i + 1
 
     End If
