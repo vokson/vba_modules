@@ -14,6 +14,7 @@ Function getGroups(s As String) As Dictionary
   Dim result As New Dictionary
   
   Dim math As New C_Math
+  Dim str As New C_String
   Dim list As New C_SCAD_List
   
   Dim text As String
@@ -34,15 +35,18 @@ Function getGroups(s As String) As Dictionary
   For i = LBound(textArray) To UBound(textArray)
     groupText = textArray(i)
 
-    nameText = Mid(text, InStr(1, text, """", vbBinaryCompare) + 1)
-    nameText = Left(nameText, InStr(1, text, """", vbBinaryCompare) - 1)
+    nameText = Mid(groupText, InStr(1, groupText, """", vbBinaryCompare) + 1)
+    nameText = Left(nameText, InStr(1, nameText, """", vbBinaryCompare) - 1)
 
-    elementsText = Mid(text, InStr(1, text, ":", vbBinaryCompare) + 1)
+    elementsText = Mid(groupText, InStr(1, groupText, ":", vbBinaryCompare) + 1)
 
-    result.Items(nameText) = list..makeArrayFromList(elementsText)
+    result.Item(nameText) = list.makeArrayFromList(elementsText)
   Next i
 
+  Set getGroups = result
+
   Set math = Nothing
+  Set str = Nothing
   Set list = Nothing
 
 End Function
