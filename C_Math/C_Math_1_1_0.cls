@@ -72,3 +72,59 @@ Public Function isArraysSame(array1, array2) As Boolean
     Next i
 
 End Function
+
+' ƒвумерна€ интерпол€ци€
+' key1, key2 - ключи в массивах keyArray1, keyArray2
+' keyArray1, keyArray2 - одномерные массив ключей, сортированные по возрастанию
+' valueArray - двумерный массив величин
+' Size(keyArray1, 0) = Size(valueArray, 0)
+' Size(keyArray2, 0) = Size(valueArray, 1)
+Function interpolateTwoDimensionalArray(key1, key2, keyArray1, keyArray2, valueArray) As Variant
+    Dim i As Long
+    Dim newArray
+    ' Dim lengthOfNewArray As Long : lengthOfNewArray = 0
+    
+    If IsArray(keyArray1) And IsArray(keyArray2) And IsArray(valueArray) Then
+
+        ReDim newArray(LBound(keyArray1) To UBound(keyArray1))
+
+        For i = LBound(keyArray1) To UBound(keyArray1)
+            newArray(i) = interpolateOneDimensionalArray(key2, keyArray2, valueArray(i))
+        Next i
+
+        interpolateTwoDimensionalArray = interpolateOneDimensionalArray(key1, keyArray1, newArray)
+    
+    End If
+    
+End Function
+
+' —оздает массив чисел от min до max с шагом pitch
+Function makeArrayWithStep(min As Long, max As Long, pitch As Long) As Long()
+    Dim result() As Long
+    Dim lengthOfArray As Long
+    lengthOfArray = 0
+
+    Dim i As Long
+    For i = min To max Step pitch
+        Redim Preserve result(lengthOfArray)
+        result(UBound(result)) = i
+        lengthOfArray = lengthOfArray + 1
+    Next i
+
+    makeArrayWithStep = result
+End Function
+
+Function mergeTwoArrays(array1, array2) As Variant
+    Dim result : result = array1
+    Redim Preserve result (LBound(array1) To (UBound(result) + UBound(array2) - LBound(array2) + 1))
+
+    Dim i As Long
+    Dim k As Long
+    k = LBound(array2)
+    For i = UBound(array1) + 1 To Ubound(result)
+        result(i) = array2(k)
+        k = k + 1
+    Next i
+
+    mergeTwoArrays = result
+End Function
