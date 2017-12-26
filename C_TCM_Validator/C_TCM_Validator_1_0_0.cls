@@ -9,6 +9,43 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = True
 Option Explicit
 
+Private ENGLISH_ALPHABET
+
+Private Sub Class_Initialize()
+    ENGLISH_ALPHABET = Array("A", "B", "C", "D", "E", "F", "G", "H", "I", "J", _
+     "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z")
+End Sub
+
+Public Function validateDocumentName(text As String) As String
+    On Error GoTo ErrorHandler
+
+    Dim dic As Dictionary
+    Set dic = decodeDocumentName(text)
+
+    If dic.Item("IS_VALID") = False Then GoTo ErrorHandler
+
+    dic.Item("CONTRACT") = validateContract(dic.Item("CONTRACT"))
+    dic.Item("CRS") = validateCRS(dic.Item("CRS"))
+    dic.Item("DISCIPLINE_CODE") = validateDisciplineCode(dic.Item("DISCIPLINE_CODE"))
+    dic.Item("DOCUMENT_TYPE_CODE") = validateDocumentTypeCode(dic.Item("DOCUMENT_TYPE_CODE"))
+    dic.Item("SEQUENCE_NUMBER") = validateNumber(dic.Item("SEQUENCE_NUMBER"), 12)
+
+    validateDocumentName = encodeDocumentName(dic)
+    Exit Function
+
+ErrorHandler:
+    validateDocumentName = ""
+End Function
+
+Private Function encodeDocumentName(dic As Dictionary) As String
+    encodeDocumentName = dic.Item("CONTRACT") & "-"
+    If dic.Item("CRS") <> "" Then  encodeDocumentName = encodeDocumentName & dic.Item("CRS") & "-"
+    encodeDocumentName = encodeDocumentName & dic.Item("DISCIPLINE_CODE") & "-"
+    encodeDocumentName = encodeDocumentName & dic.Item("DOCUMENT_TYPE_CODE") & "-"
+    encodeDocumentName = encodeDocumentName & dic.Item("SEQUENCE_NUMBER")
+End Function
+
+
 Private Function decodeDocumentName(name As String) As Dictionary
   Dim dic As New Dictionary
   Dim pos As Integer
@@ -55,6 +92,12 @@ Private Function validateContract(text As String) As String
   if text <> "3971" Then validateContract = ""
 End Function
 
+Private Function validateCRS(text As String) As String
+  validateCRS = text
+'   if text <> "C" And text <> "CA" Then validateCRS = ""
+  if text <> "CA" Then validateCRS = ""
+End Function
+
 Private Function validateDisciplineCode(text As String) As String
     Dim firstSymbol As String
     Dim secondSymbol As String
@@ -81,6 +124,25 @@ ErrorHandler:
     validateDisciplineCode = ""
 End Function
 
+Private Function validateDocumentTypeCode(text As String) As String
+    Dim firstSymbol As String
+    Dim secondSymbol As String
+    On Error GoTo ErrorHandler
+
+    If Len(text) <> 2 Then GoTo ErrorHandler
+
+    firstSymbol = validateStringFromArray( Mid(text,1,1), ENGLISH_ALPHABET)
+    secondSymbol = validateStringFromArray( Mid(text,2,1), ENGLISH_ALPHABET)
+
+    if (firstSymbol & secondSymbol) = text Then
+        validateDocumentTypeCode = text
+        Exit Function
+    End If
+
+ErrorHandler:
+    validateDocumentTypeCode = ""
+End Function
+
 Private Function validateStringFromArray(text As String, validCodes) As String
     On Error GoTo ErrorHandler
 
@@ -94,4 +156,21 @@ Private Function validateStringFromArray(text As String, validCodes) As String
 
 ErrorHandler:
     validateStringFromArray = ""
+End Function
+
+Private Function validateNumber(text As String, countOfSymbols As Integer) As String
+    On Error GoTo ErrorHandler
+
+    if Len(text) <> countOfSymbols Then GoTo ErrorHandler
+
+    Dim i As Integer
+    For i = 1 to Len(text)
+        If Not IsNumeric(CInt(Mid(text,i,1))) Then GoTo ErrorHandler
+    Next i
+
+    validateNumber = text
+    Exit Function
+
+ErrorHandler:
+    validateNumber = ""
 End Function
