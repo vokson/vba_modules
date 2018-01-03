@@ -128,3 +128,7 @@ Function mergeTwoArrays(array1, array2) As Variant
 
     mergeTwoArrays = result
 End Function
+
+Function sum(a As Double, b As Double) As Double
+    sum = a + b
+End Function
