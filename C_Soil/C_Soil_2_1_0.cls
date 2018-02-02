@@ -61,6 +61,12 @@ Private Const LIQUIDITY_INDEX_TYPE_4 = "МЯГКОПЛАСТИЧНЫЙ"
 Private Const LIQUIDITY_INDEX_TYPE_5 = "ТЕКУЧЕПЛАСТИЧНЫЙ"
 Private Const LIQUIDITY_INDEX_TYPE_6 = "ТЕКУЧИЙ"
 
+Private Const FROST_HEAVING_TYPE_NO = "НЕПУЧИНИСТЫЙ"
+Private Const FROST_HEAVING_TYPE_LOW = "СЛАБОПУЧИНИСТЫЙ"
+Private Const FROST_HEAVING_TYPE_MIDDLE = "СРЕДНЕПУЧИНИСТЫЙ"
+Private Const FROST_HEAVING_TYPE_HIGH = "СИЛЬНОПУЧИНИСТЫЙ"
+Private Const FROST_HEAVING_TYPE_VERY_HIGH = "ЧРЕЗМЕРНО ПУЧИНИСТЫЙ"
+
 Private pSoilName As String
 
 ' Наименования согласно Таблице Ж.1 ГОСТ 25100-2011
@@ -72,6 +78,7 @@ Private pSubtypeBySize As String ' Разновидность грунта по составу
 Private pTypeByDegreeOfSaturation As String ' Разновидность песка, крупнообломочного по коэффициенту водонасыщения
 Private pTypeByDensity As String ' Разновидность песка по плотности
 Private pTypeByLiquidityIndex As String ' Разновидность глинистых грунтов по показателю текучести
+Private pTypeByFrostHeaving As String ' Разновидность грунта по степени морозной пучинистости
 
 Private pSoilDensity As Double 'Плотность грунта (P) - г/см3
 Private pSoilDensity_1 As Double 'То же для расчета по I группе предельных состояний
@@ -95,6 +102,8 @@ Private pLiquidityIndex As Double ' Показатель текучести (IL) - %
 Private pPlasticityIndex As Double ' Число пластичности (IP) - %
 Private pVoidRatio As Double ' Коэффициент пористости (e) - д.е.
 Private pGranulationFactor As Double ' Показатель дисперсности по (6.33) СП 22.13330.2011 (D) - д.е.
+Private pFrozenDepth As Double ' Нормативная глубина промерзания - м
+Private pFrostHeaveRate As Double ' Степень морозной пучинистости - %
 Private topSizeLimit, bottomSizeLimit, percentsBySize
 
 Private Sub Class_Initialize()
@@ -112,6 +121,8 @@ Public Function DeepCopy() As C_Soil
     other.SubtypeBySize = Me.SubtypeBySize
     other.TypeByLiquidityIndex = Me.TypeByLiquidityIndex
     other.TypeByDensity = Me.TypeByDensity
+    other.TypeByDegreeOfSaturation = Me.TypeByDegreeOfSaturation
+    other.TypeByFrostHeaving = Me.TypeByFrostHeaving
     other.YoungModulus = Me.YoungModulus
     other.SoilDensity = Me.SoilDensity
     other.SoilDensity_1 = Me.SoilDensity_1
@@ -129,7 +140,9 @@ Public Function DeepCopy() As C_Soil
     other.LiquidLimit = Me.LiquidLimit
     other.PlasticityIndex = Me.PlasticityIndex
     other.LiquidityIndex = Me.LiquidityIndex
+    other.FrostHeaveRate = Me.FrostHeaveRate
     other.GranulationFactor = Me.GranulationFactor
+    other.FrozenDepth = Me.FrozenDepth
 
     Set DeepCopy = other
 End Function
@@ -310,6 +323,12 @@ Public Property Let LiquidityIndex(IL As Double)
     pLiquidityIndex = IL
 End Property
 
+' Коэффициент водонасыщения (IL) - %
+' ГОСТ 25100-2011, формула А.9
+Public Sub AutoLiquidityIndex()
+    If PlasticityIndex <> 0 Then pLiquidityIndex = (WaterContent - PlasticLimit) / PlasticityIndex
+End Sub
+
 Public Property Get GranulationFactor() As Double
     GranulationFactor = pGranulationFactor
 End Property
@@ -318,11 +337,25 @@ Public Property Let GranulationFactor(D As Double)
     pGranulationFactor = D
 End Property
 
-' Коэффициент водонасыщения (IL) - %
-' ГОСТ 25100-2011, формула А.9
-Public Sub AutoLiquidityIndex()
-    If PlasticityIndex <> 0 Then pLiquidityIndex = (WaterContent - PlasticLimit) / PlasticityIndex
-End Sub
+Public Property Get FrozenDepth() As Double
+    FrozenDepth = pFrozenDepth
+End Property
+
+Public Property Let FrozenDepth(depth As Double)
+    pFrozenDepth = depth
+End Property
+
+Public Property Get FrostHeaveRate() As Double
+        FrostHeaveRate = pFrostHeaveRate
+End Property
+
+Public Property Let FrostHeaveRate(value As Double)
+    If value >= 0 Then
+        pFrostHeaveRate = value
+    Else
+        Debug.Print "Степень морозной пучинистойсти д.б. >= 0"
+    End If
+End Property
 
 ' Ищет индекс в массиве по мин. размеру частиц в данной фракции
 Private Function findIndexByMinSize(size As Double) As Integer
@@ -608,20 +641,63 @@ Public Property Let TypeByDegreeOfSaturation(name As String)
         Case SATURATION_TYPE_1, SATURATION_TYPE_2, SATURATION_TYPE_3:
              pTypeByDegreeOfSaturation = name
         Case Else
-            Debug.Print name & " is wrong type by degree of saturation for soil"
+            Debug.Print name & " неправильный тип по показателю водонасыщения для грунта"
     End Select
 End Property
 
+' Разновидность грунта по степени морозной пучинистости
+Public Property Get TypeByFrostHeaving() As String
+    TypeByFrostHeaving = pTypeByFrostHeaving
+End Property
+
+' Разновидность грунта по степени морозной пучинистости
+Public Property Let TypeByFrostHeaving(name As String)
+    Select Case name
+        Case FROST_HEAVING_TYPE_NO, FROST_HEAVING_TYPE_LOW, _
+             FROST_HEAVING_TYPE_MIDDLE, FROST_HEAVING_TYPE_HIGH, _
+             FROST_HEAVING_TYPE_VERY_HIGH:
+             pTypeByFrostHeaving = name
+        Case Else
+            Debug.Print name & " неправильный тип по степени морозной пучинистости"
+    End Select
+End Property
+
+' Автоматическое определение типа по степени морозной пучинистости
+' Таблица Б.27 ГОСТ 25100-2011
+Private Sub AutoTypeByFrostHeaving()
+
+    pTypeByFrostHeaving = ""
+        
+    If FrostHeaveRate < 1# Then
+        pTypeByFrostHeaving = FROST_HEAVING_TYPE_NO
+        
+    ElseIf FrostHeaveRate <= 3.5 Then
+        pTypeByFrostHeaving = FROST_HEAVING_TYPE_LOW
+    
+    ElseIf FrostHeaveRate <= 7# Then
+        pTypeByFrostHeaving = FROST_HEAVING_TYPE_MIDDLE
+
+    ElseIf FrostHeaveRate <= 10# Then
+        pTypeByFrostHeaving = FROST_HEAVING_TYPE_HIGH
+    
+    Else
+        pTypeByFrostHeaving = FROST_HEAVING_TYPE_VERY_HIGH
+    End If
+    
+End Sub
+
 ' Автоматическое определение всех разновидностей
 Public Sub AssignTypesAutomatically()
-    Call AutoDegreeOfSaturation
+   
     Call AutoPlasticityIndex
     Call AutoLiquidityIndex
     Call AutoVoidRatio
+    Call AutoDegreeOfSaturation
     Call AutoTypeBySize
     Call AutoTypeByDegreeOfSaturation
     Call AutoTypeByDensity
     Call AutoTypeByLiquidityIndex
+    Call AutoTypeByFrostHeaving
 End Sub
 
 ' Автоматическое определение песков и крупнообломочных по коэффициенту водонасыщения
