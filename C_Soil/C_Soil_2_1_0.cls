@@ -80,6 +80,7 @@ Private pTypeByDensity As String ' Разновидность песка по плотности
 Private pTypeByLiquidityIndex As String ' Разновидность глинистых грунтов по показателю текучести
 Private pTypeByFrostHeaving As String ' Разновидность грунта по степени морозной пучинистости
 
+Private pWaterDensity As Double 'Плотность грунта (P) - г/см3
 Private pSoilDensity As Double 'Плотность грунта (P) - г/см3
 Private pSoilDensity_1 As Double 'То же для расчета по I группе предельных состояний
 Private pSoilDensity_2 As Double 'То же для расчета по II группе предельных состояний
@@ -104,13 +105,55 @@ Private pVoidRatio As Double ' Коэффициент пористости (e) - д.е.
 Private pGranulationFactor As Double ' Показатель дисперсности по (6.33) СП 22.13330.2011 (D) - д.е.
 Private pFrozenDepth As Double ' Нормативная глубина промерзания - м
 Private pFrostHeaveRate As Double ' Степень морозной пучинистости - %
+Private pShearHeavingForce As Double' Касательная сила морозного пучения - кПа
 Private topSizeLimit, bottomSizeLimit, percentsBySize
 
 Private Sub Class_Initialize()
       topSizeLimit = Array(100000, 800, 400, 200, 100, 60, 10, 5, 2, 1, 0.5, 0.25, 0.1, 0.05, 0.01, 0.002)
       bottomSizeLimit = Array(800, 400, 200, 100, 60, 10, 5, 2, 1, 0.5, 0.25, 0.1, 0.05, 0.01, 0.002, 0)
       percentsBySize = Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+
+      pWaterDensity = 1#
 End Sub
+
+Public Function getPropertyByName(nameOfParameter As String) As Variant
+
+    Select Case nameOfParameter
+
+        Case "NAME": getPropertyByName = Me.name
+        Case "CLASS_OF_SOIL": getPropertyByName = Me.ClassOfSoil
+        Case "TYPE_BY_SIZE": getPropertyByName = Me.TypeBySize
+        Case "SUBTYPE_BY_SIZE": getPropertyByName = Me.SubtypeBySize
+        Case "TYPE_BY_LIQUIDITY_INDEX": getPropertyByName = Me.TypeByLiquidityIndex
+        Case "TYPE_BY_DENSITY": getPropertyByName = Me.TypeByDensity
+        Case "TYPE_BY_DEGREE_OF_SATURATION": getPropertyByName = Me.TypeByDegreeOfSaturation
+        Case "TYPE_BY_FROST_HEAVING": getPropertyByName = Me.TypeByFrostHeaving
+        Case "YOUNG_MODULUS": getPropertyByName = Me.YoungModulus
+        Case "SOIL_DENSITY": getPropertyByName = Me.SoilDensity
+        Case "SOIL_DENSITY_1": getPropertyByName = Me.SoilDensity_1
+        Case "SOIL_DENSITY_2": getPropertyByName =  Me.SoilDensity_2
+        Case "SPECIFIC_COHESION": getPropertyByName =  Me.SpecificCohesion
+        Case "SPECIFIC_COHESION_1": getPropertyByName = Me.SpecificCohesion_1
+        Case "SPECIFIC_COHESION_2": getPropertyByName =  Me.SpecificCohesion_2
+        Case "INTERNAL_FRICTION_ANGLE": getPropertyByName =  Me.InternalFrictionAngle
+        Case "INTERNAL_FRICTION_ANGLE_1": getPropertyByName =  Me.InternalFrictionAngle_1
+        Case "INTERNAL_FRICTION_ANGLE_2": getPropertyByName =  Me.InternalFrictionAngle_2
+        Case "VOID_RATIO": getPropertyByName =  Me.VoidRatio
+        Case "DEGREE_OF_SATURATION": getPropertyByName = Me.DegreeOfSaturation
+        Case "WATER_CONTENT": getPropertyByName = Me.WaterContent
+        Case "PLASTIC_LIMIT": getPropertyByName =  Me.PlasticLimit
+        Case "LIQUID_LIMIT": getPropertyByName =  Me.LiquidLimit
+        Case "PLASTICITY_INDEX": getPropertyByName =  Me.PlasticityIndex
+        Case "LIQUIDITY_INDEX": getPropertyByName =  Me.LiquidityIndex
+        Case "FROST_HEAVE_RATE": getPropertyByName =  Me.FrostHeaveRate
+        Case "SHEAR_HEAVING_FORCE": getPropertyByName =  Me.ShearHeavingForce
+        Case "GRANULATION_FACTOR": getPropertyByName = Me.GranulationFactor
+        Case "FROZEN_DEPTH": getPropertyByName =  Me.FrozenDepth
+        Case "WATER_DENSITY": getPropertyByName =  Me.waterDensity
+
+    End Select
+
+End Function
 
 Public Function DeepCopy() As C_Soil
     Dim other As New C_Soil
@@ -141,11 +184,21 @@ Public Function DeepCopy() As C_Soil
     other.PlasticityIndex = Me.PlasticityIndex
     other.LiquidityIndex = Me.LiquidityIndex
     other.FrostHeaveRate = Me.FrostHeaveRate
+    other.ShearHeavingForce = Me.ShearHeavingForce
     other.GranulationFactor = Me.GranulationFactor
     other.FrozenDepth = Me.FrozenDepth
+    other.waterDensity = Me.waterDensity
 
     Set DeepCopy = other
 End Function
+
+Public Property Get waterDensity() As Double
+    waterDensity = pWaterDensity
+End Property
+
+Public Property Let waterDensity(value As Double)
+    pWaterDensity = value
+End Property
    
 Public Property Get name() As String
     name = pSoilName
@@ -346,15 +399,19 @@ Public Property Let FrozenDepth(depth As Double)
 End Property
 
 Public Property Get FrostHeaveRate() As Double
-        FrostHeaveRate = pFrostHeaveRate
+    FrostHeaveRate = pFrostHeaveRate
 End Property
 
 Public Property Let FrostHeaveRate(value As Double)
-    If value >= 0 Then
-        pFrostHeaveRate = value
-    Else
-        Debug.Print "Степень морозной пучинистойсти д.б. >= 0"
-    End If
+    pFrostHeaveRate = value
+End Property
+
+Public Property Get ShearHeavingForce() As Double
+    ShearHeavingForce = pShearHeavingForce
+End Property
+
+Public Property Let ShearHeavingForce(value As Double)
+    pShearHeavingForce = value
 End Property
 
 ' Ищет индекс в массиве по мин. размеру частиц в данной фракции
