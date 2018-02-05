@@ -48,6 +48,8 @@ Public Sub loadFromExcelSheet (sheet As Excel.Worksheet, rowWithNames As Integer
     Dim xls As New C_Excel_Worksheet
 
     Dim requiredColumns As Variant
+
+    ' Кол-во переносов д.б. не более 24
     requiredColumns = Array ( _
         "name", _
         "ClassOfSoil", _
@@ -56,27 +58,18 @@ Public Sub loadFromExcelSheet (sheet As Excel.Worksheet, rowWithNames As Integer
         "TypeByLiquidityIndex", _
         "TypeByDensity", _
         "YoungModulus", _
-        "Yn", _
-        "Cn", _
-        "Fin", _
-        "Y2", _
-        "C2", _
-        "Fi2", _
-        "Y1", _
-        "C1", _
-        "Fi1", _
+        "Yn", "Y2", "Y1", _
+        "Cn", "C2", "C1", _
+        "Fin", "Fi2", "Fi1", _
         "e", _
         "Sr", _
         "W", _
-        "WL", _
-        "WP", _
-        "IP", _
-        "IL", _
-        "efh", _
+        "WL", "WP", _
+        "IP", "IL", _
+        "efh", "tfh", _
         "D", _
         "dfn", _
         "TypeByFrostHeaving" _
-
     )
 
     Dim i As Integer
@@ -124,6 +117,7 @@ Public Sub loadFromExcelSheet (sheet As Excel.Worksheet, rowWithNames As Integer
         soil.LiquidityIndex = sheet.Cells(row, columns("IL"))
 
         soil.FrostHeaveRate = sheet.Cells(row, columns("efh"))
+        soil.ShearHeavingForce = sheet.Cells(row, columns("tfh"))
         soil.GranulationFactor = sheet.Cells(row, columns("D"))
         soil.FrozenDepth = sheet.Cells(row, columns("dfn"))
         soil.TypeByFrostHeaving = sheet.Cells(row, columns("TypeByFrostHeaving"))
