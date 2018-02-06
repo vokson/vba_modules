@@ -4,8 +4,10 @@ Option Explicit
 Public Function getListOfRequiredModules() As Dictionary
     Dim dic As New Dictionary
     
-    dic.Item("C_Soil") = "1_0_0"
-    dic.Item("C_Excel_Worksheet") = "1_0_0"
+    dic.Item("C_Soil") = "2_1_0"
+    dic.Item("C_SP22_13330_2011_Tables") = "1_1_0"
+    dic.Item("C_SP22_13330_2011") = "1_1_0"
+    dic.Item("M_SP22_13330_2011_Test") = "1_1_0"
     
     Set getListOfRequiredModules = dic
 End Function
