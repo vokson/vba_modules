@@ -268,7 +268,7 @@ Function t5_12(N As String, InternalFrictionAngle_1 As Double, delta As Double) 
 
     Select Case N
         Case "Ny":
-            values.Item("KeyNy") = Array(0, 0.05, 0.12, 0.21, 0.36, 0.58, 0.45, 1.6, 2.79, 5.22) ' значения кэффициентов при предельных углах нагрузки
+            values.Item("KeyNy") = Array(0, 0.05, 0.12, 0.21, 0.36, 0.58, 0.95, 1.6, 2.79, 5.22) ' значения кэффициента Ny при предельных углах нагрузки
 
             values.Item("valueArray") = Array( _
                             Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0), _
@@ -277,7 +277,7 @@ Function t5_12(N As String, InternalFrictionAngle_1 As Double, delta As Double) 
                             Array(1.35, 1.02, 0.61, 0.21, 0, 0, 0, 0, 0, 0), _
                             Array(2.88, 2.18, 1.47, 0.82, 0.36, 0, 0, 0, 0, 0), _
                             Array(5.87, 4.5, 3.18, 2, 1.05, 0.58, 0, 0, 0, 0), _
-                            Array(12.39, 9.43, 6.72, 4.44, 2.63, 1.29, 0.45, 0, 0, 0), _
+                            Array(12.39, 9.43, 6.72, 4.44, 2.63, 1.29, 7.95, 0, 0, 0), _
                             Array(27.5, 20.58, 14.63, 9.79, 6.08, 3.38, 1.6, 0, 0, 0), _
                             Array(66.01, 48.3, 33.84, 22.56, 14.18, 8.26, 4.3, 2.79, 0, 0), _
                             Array(177.61, 126.09, 86.2, 56.5, 32.26, 20.73, 11.26, 5.45, 5.22, 0))
@@ -285,11 +285,11 @@ Function t5_12(N As String, InternalFrictionAngle_1 As Double, delta As Double) 
             NBorder = math.interpolateOneDimensionalArray(delta, values.Item("KeyDelta"), values.Item("KeyNy"))
 
         Case "Nq":
-            values.Item("KeyNq") = Array(1, 0.26, 1.16, 2.06, 2.69, 3.6, 4.95, 7.04, 10.46, 16.42) ' значения кэффициентов при предельных углах нагрузки
+            values.Item("KeyNq") = Array(1, 1.26, 1.16, 2.06, 2.69, 3.6, 4.95, 7.04, 10.46, 16.42) ' значения кэффициента Nq при предельных углах нагрузки
 
             values.Item("valueArray") = Array( _
                             Array(1, 0, 0, 0, 0, 0, 0, 0, 0, 0), _
-                            Array(1.57, 0.26, 0, 0, 0, 0, 0, 0, 0, 0), _
+                            Array(1.57, 1.26, 0, 0, 0, 0, 0, 0, 0, 0), _
                             Array(2.47, 2.16, 1.16, 0, 0, 0, 0, 0, 0, 0), _
                             Array(3.94, 3.45, 2.84, 2.06, 0, 0, 0, 0, 0, 0), _
                             Array(6.4, 5.56, 4.64, 3.64, 2.69, 0, 0, 0, 0, 0), _
@@ -302,19 +302,19 @@ Function t5_12(N As String, InternalFrictionAngle_1 As Double, delta As Double) 
             NBorder = math.interpolateOneDimensionalArray(delta, values.Item("KeyDelta"), values.Item("KeyNq"))
 
         Case "Nc":
-            values.Item("KeyNc") = Array(5.14, 2.93, 3.38, 3.94, 4.65, 5.58, 6.85, 8.63, 11.27, 15.82) ' значения кэффициентов при предельных углах нагрузки
+            values.Item("KeyNc") = Array(5.14, 2.93, 3.38, 3.94, 4.65, 5.58, 6.85, 8.63, 11.27, 15.82) ' значения кэффициента Nc при предельных углах нагрузки
 
             values.Item("valueArray") = Array( _
                             Array(5.14, 0, 0, 0, 0, 0, 0, 0, 0, 0), _
-                            Array(6.49,2.93, 0, 0, 0, 0, 0, 0, 0, 0), _
-                            Array(8.34,6.57,3.38, 0, 0, 0, 0, 0, 0, 0), _
-                            Array(10.98,9.13,6.88,3.94, 0, 0, 0, 0, 0, 0), _
-                            Array(14.84,12.53,10.02,7.26,4.65, 0, 0, 0, 0, 0), _
-                            Array(20.72,17.53,14.26,10.99,7.68,5.58, 0, 0, 0, 0), _
-                            Array(30.14,25.34,20.68,16.23,12.05,8.09,6.85, 0, 0, 0), _
-                            Array(46.12,38.36,31.09,24.45,18.48,13.19,8.63,0, 0, 0), _
-                            Array(75.31,61.63,49.31,38.45,29.07,21.1,14.43,11.27,0, 0), _
-                            Array(133.87,107.23,84.16,64.58,48.26,34.93,24.24,15.82,15.82, 0))
+                            Array(6.49, 2.93, 0, 0, 0, 0, 0, 0, 0, 0), _
+                            Array(8.34, 6.57, 3.38, 0, 0, 0, 0, 0, 0, 0), _
+                            Array(10.98, 9.13, 6.88, 3.94, 0, 0, 0, 0, 0, 0), _
+                            Array(14.84, 12.53, 10.02, 7.26, 4.65, 0, 0, 0, 0, 0), _
+                            Array(20.72, 17.53, 14.26, 10.99, 7.68, 5.58, 0, 0, 0, 0), _
+                            Array(30.14, 25.34, 20.68, 16.23, 12.05, 8.09, 6.85, 0, 0, 0), _
+                            Array(46.12, 38.36, 31.09, 24.45, 18.48, 13.19, 8.63, 0, 0, 0), _
+                            Array(75.31, 61.63, 49.31, 38.45, 29.07, 21.1, 14.43, 11.27, 0, 0), _
+                            Array(133.87, 107.23, 84.16, 64.58, 48.26, 34.93, 24.24, 15.82, 15.82, 0))
 
             NBorder = math.interpolateOneDimensionalArray(delta, values.Item("KeyDelta"), values.Item("KeyNc"))
        End Select
@@ -336,10 +336,10 @@ Function t5_12(N As String, InternalFrictionAngle_1 As Double, delta As Double) 
                       FiNext, delta, values.Item("KeyArray1"), values.Item("KeyArray2"), values.Item("valueArray"))
 
 
-    If delta = deltaBorder Then
+    If delta = deltaBorder Then ' На грани
             result = NBorder
         Else
-            If delta > deltaBorder Then
+            If delta > deltaBorder Then ' Выход за пределы
                     result = 0
                 Else
                     result = NOfFiNext + (NBorder - NOfFiNext) * (InternalFrictionAngle_1 - FiNext) / (FiBorder - FiNext)
