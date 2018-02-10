@@ -9,6 +9,14 @@ Public Function getFormula8_55(Rb As Double, b As Double, h0 As Double, FIn As D
 
 End Function
 
+Public Function getFormula8_56(Rbt As Double, qsw As Double, b As Double, h0 As Double, FIn As Double) As Double
+    
+    Dim sp As New C_SP63_13330_2012
+        getFormula8_56 = sp.Formulas.f8_56(Rbt, qsw, b, h0, FIn)
+    Set sp = Nothing
+
+End Function
+
 Public Function getFormula8_57(Rbt As Double, b As Double, h0 As Double, C As Double, FIn As Double) As Double
     
     Dim sp As New C_SP63_13330_2012
