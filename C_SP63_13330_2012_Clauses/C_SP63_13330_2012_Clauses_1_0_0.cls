@@ -11,7 +11,7 @@ Option Explicit
 
 ' СП 63.13330.2012 (изм.2) - Пункт 8.1.34
 ' stress - (-) сжатие, (+) растяжение
-Function c8_1_34(stress As Double, Rb As Double, Rbt As Double) As Double
+Function c8_1_34(ByVal stress As Double, ByVal Rb As Double,ByVal  Rbt As Double) As Double
     
   If (stress < 0) Then
 
