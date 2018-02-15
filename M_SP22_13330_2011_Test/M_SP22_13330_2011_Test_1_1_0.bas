@@ -212,3 +212,12 @@ Public Function getFormulas6_43(pb As Double, b As Double, L As Double, ea As Do
         getFormulas6_43 = sp.Formulas.f6_43(pb, b, L, ea)
     Set sp = Nothing
 End Function
+
+Public Function GetGraph6_12(Fi As Double, F As String)
+    Dim sp As New C_SP22_13330_2011
+
+    GetGraph6_12 = sp.Tables.g6_12(Fi, F)
+
+    Set sp = Nothing
+End Function
+
