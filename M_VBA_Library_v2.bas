@@ -204,17 +204,189 @@ Private Function isRevEqual( _
     minorTest As String, _
     patchTest As String _
 )
+
+    isRevEqual = False
+
+    If majorTest = "*" Or minorTest = "*" Or patchTest = "*" Then
+        Exit Function
+    End If
+
     If _
-        (majorOriginal = majorTest Or majorOriginal ="*" Or majorTest = "*") And _
-        (minorOriginal = minorTest Or minorOriginal ="*" Or minorTest = "*") And _
-        (patchOriginal = patchTest Or patchOriginal ="*" Or patchTest = "*") _
+        (majorOriginal = majorTest Or majorOriginal ="*") And _
+        (minorOriginal = minorTest Or minorOriginal ="*") And _
+        (patchOriginal = patchTest Or patchOriginal ="*") _
     Then
         isRevEqual = True
-    Else
-        isRevEqual = False
     End If
 
 End Function
+
+Private Function isRevBigger( _
+    majorOriginal As String, _
+    minorOriginal As String, _
+    patchOriginal As String, _
+    majorTest As String, _
+    minorTest As String, _
+    patchTest As String _
+)
+
+    isRevBigger = False
+
+    If majorTest = "*" Or minorTest = "*" Or patchTest = "*" Then
+        Exit Function
+    End If
+
+    If (majorTest > majorOriginal) And ( majorOriginal <> "*") Then
+        isRevBigger = True : Exit Function
+    Elseif (majorTest < majorOriginal) And ( majorOriginal <> "*") Then
+        Exit Function
+    Else
+        If (minorTest > minorOriginal) And ( minorOriginal <> "*") Then
+            isRevBigger = True : Exit Function
+        Elseif (minorTest < minorOriginal) And ( minorOriginal <> "*") Then
+            Exit Function
+        Else
+            If (patchTest <= patchOriginal And patchOriginal <> "*") Then
+                Exit Function
+            Else
+                isRevBigger = True
+            End If
+        End If
+    End If
+
+End Function
+
+Private Function isRevBiggerOrEqual( _
+    majorOriginal As String, _
+    minorOriginal As String, _
+    patchOriginal As String, _
+    majorTest As String, _
+    minorTest As String, _
+    patchTest As String _
+)
+
+    isRevBiggerOrEqual = False
+
+    If isRevBigger(majorOriginal, minorOriginal, patchOriginal, majorTest, minorTest, patchTest) Or _
+       isRevEqual(majorOriginal, minorOriginal, patchOriginal, majorTest, minorTest, patchTest) Then
+            isRevBiggerOrEqual = True
+    End If
+
+End Function
+
+Private Function isRevSmaller( _
+    majorOriginal As String, _
+    minorOriginal As String, _
+    patchOriginal As String, _
+    majorTest As String, _
+    minorTest As String, _
+    patchTest As String _
+)
+
+    isRevSmaller = False
+
+    If majorTest = "*" Or minorTest = "*" Or patchTest = "*" Then
+        Exit Function
+    End If
+
+    If (majorTest < majorOriginal) And ( majorOriginal <> "*") Then
+        isRevSmaller = True : Exit Function
+    Elseif (majorTest > majorOriginal) And ( majorOriginal <> "*") Then
+        Exit Function
+    Else
+        If (minorTest < minorOriginal) And ( minorOriginal <> "*") Then
+            isRevSmaller = True : Exit Function
+        Elseif (minorTest > minorOriginal) And ( minorOriginal <> "*") Then
+            Exit Function
+        Else
+            If (patchTest >= patchOriginal And patchOriginal <> "*") Then
+                Exit Function
+            Else
+                isRevSmaller = True
+            End If
+        End If
+    End If
+
+End Function
+
+Private Function isRevSmallerOrEqual( _
+    majorOriginal As String, _
+    minorOriginal As String, _
+    patchOriginal As String, _
+    majorTest As String, _
+    minorTest As String, _
+    patchTest As String _
+)
+
+    isRevSmallerOrEqual = False
+
+    If isRevSmaller(majorOriginal, minorOriginal, patchOriginal, majorTest, minorTest, patchTest) Or _
+       isRevEqual(majorOriginal, minorOriginal, patchOriginal, majorTest, minorTest, patchTest) Then
+            isRevSmallerOrEqual = True
+    End If
+
+End Function
+
+Private Function getListOfVersionForModule(nameOfModule As String) As Collection
+    Dim foldersInCurrentDirectory As New Collection
+
+    Dim strFolder As String
+    strFolder = Application.ActiveWorkbook.path & DIRECTORY_SEPARATOR & _
+        FOLDER_WITH_VBA_MODULES & DIRECTORY_SEPARATOR & nameOfModule & DIRECTORY_SEPARATOR
+    
+    Dim strTemp As String
+    strTemp = Dir(strFolder, vbDirectory)
+    Do While strTemp <> vbNullString
+        If (strTemp <> ".") And (strTemp <> "..") Then
+            If (GetAttr(strFolder & strTemp) And vbDirectory) <> 0 Then
+                foldersInCurrentDirectory.Add strTemp
+            End If
+        End If
+        strTemp = Dir
+    Loop
+
+    Set getListOfVersionForModule = foldersInCurrentDirectory
+    Set foldersInCurrentDirectory = Nothing
+
+End Function
+
+Function isFileExists(fullPath As String) As Boolean
+    If Dir(fullPath) <> "" Then
+        isFileExists = True
+    Else
+        isFileExists = False
+    End If
+End Function
+
+Function readFile(fullPath As String) As String
+    Dim fso As New FileSystemObject
+    Dim JsonTS As TextStream
+    
+    Set JsonTS = fso.OpenTextFile(fullPath, ForReading)
+        readFile = JsonTS.ReadAll
+    JsonTS.Close
+End Function
+
+Private Function getListFromPackageJson(nameOfModule As String, versionOfModule As String) As Dictionary
+
+    Dim pathToPackageJson As String
+    pathToPackageJson = Application.ActiveWorkbook.path & DIRECTORY_SEPARATOR & _
+        FOLDER_WITH_VBA_MODULES & DIRECTORY_SEPARATOR & nameOfModule & DIRECTORY_SEPARATOR & _
+        versionOfModule & DIRECTORY_SEPARATOR & "package.json"
+    
+    If isFileExists(pathToPackageJson) = False Then
+        MsgBox "File package.json is NOT found for " & nameOfModule & " [" & versionOfModule & "]"
+        End
+    End If
+
+    Set getListFromPackageJson = ParseJson(readFile(pathToPackageJson))
+
+End Function
+
+
+'**********************************************
+'***************** TESTS **********************
+'**********************************************
 
 Public Sub testIsRevisionCorrect()
     Dim count As Integer
@@ -402,19 +574,20 @@ Public Sub testIsRevEqual()
     Dim test As New Dictionary
 
     test.Item("1.2.3|1.2.3") = True
-    test.Item("1.2.3|1.2.*") = True
-    test.Item("1.2.3|1.*.3") = True
-    test.Item("1.2.3|1.*.3") = True
-    test.Item("1.2.3|*.2.3") = True
-    test.Item("1.2.3|*.*.3") = True
-    test.Item("1.2.3|1.*.*") = True
-    test.Item("1.2.3|*.2.*") = True
-    test.Item("1.2.3|*.*.*") = True
-    test.Item("1.2.3|1.3.3") = False
-    test.Item("1.2.3|*.3.3") = False
-    test.Item("1.2.3|1.3.*") = False
-    test.Item("1.2.3|*.3.*") = False
-    test.Item("1.2.3|*.3.*") = False
+    test.Item("1.2.*|1.2.3") = True
+    test.Item("1.*.3|1.2.3") = True
+    test.Item("1.*.3|1.2.3") = True
+    test.Item("*.2.3|1.2.3") = True
+    test.Item("*.*.3|1.2.3") = True
+    test.Item("1.*.*|1.2.3") = True
+    test.Item("*.2.*|1.2.3") = True
+    test.Item("*.*.*|1.2.3") = True
+    test.Item("1.3.3|1.2.3") = False
+    test.Item("*.3.3|1.2.3") = False
+    test.Item("1.3.*|1.2.3") = False
+    test.Item("*.3.*|1.2.3") = False
+    test.Item("*.3.*|1.2.3") = False
+    test.Item("*.*.*|*.2.3") = False
     
 
     Dim varKey As variant
@@ -445,4 +618,325 @@ Public Sub testIsRevEqual()
 
 End Sub
 
+Public Sub testIsRevBigger()
+    Dim count As Integer
+    count = 0
+
+    Dim test As New Dictionary
+
+    test.Item("1.2.3|1.2.3") = False
+    test.Item("1.2.3|1.1.4") = False
+    test.Item("1.2.3|0.3.4") = False
+    test.Item("1.2.3|1.2.4") = True
+    test.Item("1.2.3|1.3.3") = True
+    test.Item("1.2.3|2.2.3") = True
+    test.Item("1.2.*|1.2.1") = True
+    test.Item("1.*.3|1.1.4") = True
+    test.Item("*.2.3|1.3.3") = True
+    test.Item("*.2.3|1.2.4") = True
+    test.Item("*.*.3|0.0.4") = True
+    test.Item("1.*.*|2.0.0") = True
+    test.Item("*.2.*|0.3.0") = True
+    test.Item("*.*.*|0.0.0") = True
+    
+    
+
+    Dim varKey As variant
+    Dim revisions() As String
+    Dim originalRevs() As String
+    Dim testRevs() As String
+    For Each varKey In test.Keys
+
+        revisions = Split(CStr(varKey),"|")
+        originalRevs = Split(revisions(0),".")
+        testRevs = Split(revisions(1),".")
+
+        if isRevBigger( _
+            originalRevs(0), originalRevs(1), originalRevs(2), _
+            testRevs(0), testRevs(1), testRevs(2) _
+        ) = test.Item(varKey) Then
+            count = count + 1
+        Else   
+            Debug.Print "Test No." & Str(count + 1) & " - FAILED"
+
+            Debug.Print varKey
+            Debug.Print test.Item(varKey)
+            Exit Sub
+        End If
+    Next
+
+    Debug.Print Str(count) & " tests PASSED"
+
+End Sub
+
+Public Sub testIsRevBiggerOrEqual()
+    Dim count As Integer
+    count = 0
+
+    Dim test As New Dictionary
+
+    test.Item("1.2.3|1.2.3") = True
+    test.Item("1.2.3|1.1.4") = False
+    test.Item("1.2.3|0.3.4") = False
+    test.Item("1.2.3|1.2.4") = True
+    test.Item("1.2.3|1.3.3") = True
+    test.Item("1.2.3|2.2.3") = True
+    test.Item("1.2.*|1.2.1") = True
+
+    test.Item("1.*.3|1.1.4") = True
+    test.Item("1.*.3|1.1.3") = True
+
+    test.Item("*.2.3|1.2.3") = True
+    test.Item("*.2.3|1.3.3") = True
+
+    test.Item("*.2.3|1.2.3") = True
+    test.Item("*.2.3|1.2.4") = True
+
+    test.Item("*.*.3|0.0.3") = True
+    test.Item("*.*.3|0.0.4") = True
+
+    test.Item("1.*.*|2.0.0") = True
+    test.Item("1.*.*|1.0.0") = True
+
+    test.Item("*.2.*|0.2.0") = True
+    test.Item("*.2.*|0.3.0") = True
+
+    test.Item("*.*.*|0.0.0") = True
+    
+    
+
+    Dim varKey As variant
+    Dim revisions() As String
+    Dim originalRevs() As String
+    Dim testRevs() As String
+    For Each varKey In test.Keys
+
+        revisions = Split(CStr(varKey),"|")
+        originalRevs = Split(revisions(0),".")
+        testRevs = Split(revisions(1),".")
+
+        if isRevBiggerOrEqual( _
+            originalRevs(0), originalRevs(1), originalRevs(2), _
+            testRevs(0), testRevs(1), testRevs(2) _
+        ) = test.Item(varKey) Then
+            count = count + 1
+        Else   
+            Debug.Print "Test No." & Str(count + 1) & " - FAILED"
+
+            Debug.Print varKey
+            Debug.Print test.Item(varKey)
+            Exit Sub
+        End If
+    Next
+
+    Debug.Print Str(count) & " tests PASSED"
+
+End Sub
+
+Public Sub testIsRevSmaller()
+    Dim count As Integer
+    count = 0
+
+    Dim test As New Dictionary
+
+    test.Item("1.2.3|1.2.3") = False
+    test.Item("1.2.3|1.3.2") = False
+    test.Item("1.2.3|2.1.1") = False
+    test.Item("1.2.3|1.2.2") = True
+    test.Item("1.2.3|1.1.3") = True
+    test.Item("1.2.3|0.2.3") = True
+    test.Item("1.2.*|1.2.1") = True
+    test.Item("1.*.3|1.1.2") = True
+    test.Item("*.2.3|1.1.2") = True
+    test.Item("*.2.3|1.2.2") = True
+    test.Item("*.*.3|0.0.2") = True
+    test.Item("1.*.*|0.0.0") = True
+    test.Item("*.2.*|0.1.0") = True
+    test.Item("*.*.*|0.0.0") = True
+    
+    
+
+    Dim varKey As variant
+    Dim revisions() As String
+    Dim originalRevs() As String
+    Dim testRevs() As String
+    For Each varKey In test.Keys
+
+        revisions = Split(CStr(varKey),"|")
+        originalRevs = Split(revisions(0),".")
+        testRevs = Split(revisions(1),".")
+
+        If isRevSmaller( _
+            originalRevs(0), originalRevs(1), originalRevs(2), _
+            testRevs(0), testRevs(1), testRevs(2) _
+        ) = test.Item(varKey) Then
+            count = count + 1
+        Else   
+            Debug.Print "Test No." & Str(count + 1) & " - FAILED"
+
+            Debug.Print varKey
+            Debug.Print test.Item(varKey)
+            Exit Sub
+        End If
+    Next
+
+    Debug.Print Str(count) & " tests PASSED"
+
+End Sub
+
+Public Sub testIsRevSmallerOrEqual()
+    Dim count As Integer
+    count = 0
+
+    Dim test As New Dictionary
+
+    test.Item("1.2.3|1.2.3") = True
+    test.Item("1.2.3|1.3.2") = False
+    test.Item("1.2.3|2.1.1") = False
+    test.Item("1.2.3|1.2.2") = True
+    test.Item("1.2.3|1.1.3") = True
+    test.Item("1.2.3|0.2.3") = True
+    test.Item("1.2.*|1.2.1") = True
+
+    test.Item("1.*.3|1.1.2") = True
+    test.Item("1.*.3|1.1.3") = True
+
+
+    test.Item("*.2.3|1.1.3") = True
+    test.Item("*.2.3|1.2.3") = True
+
+    test.Item("*.2.3|1.2.2") = True
+    test.Item("*.2.3|1.2.3") = True
+
+    test.Item("*.*.3|0.0.2") = True
+    test.Item("*.*.3|0.0.3") = True
+
+    test.Item("1.*.*|0.0.0") = True
+    test.Item("1.*.*|1.0.0") = True
+
+    test.Item("*.2.*|0.1.0") = True
+    test.Item("*.2.*|0.2.0") = True
+
+    test.Item("*.*.*|0.0.0") = True
+    
+    
+
+    Dim varKey As variant
+    Dim revisions() As String
+    Dim originalRevs() As String
+    Dim testRevs() As String
+    For Each varKey In test.Keys
+
+        revisions = Split(CStr(varKey),"|")
+        originalRevs = Split(revisions(0),".")
+        testRevs = Split(revisions(1),".")
+
+        If isRevSmallerOrEqual( _
+            originalRevs(0), originalRevs(1), originalRevs(2), _
+            testRevs(0), testRevs(1), testRevs(2) _
+        ) = test.Item(varKey) Then
+            count = count + 1
+        Else   
+            Debug.Print "Test No." & Str(count + 1) & " - FAILED"
+
+            Debug.Print varKey
+            Debug.Print test.Item(varKey)
+            Exit Sub
+        End If
+    Next
+
+    Debug.Print Str(count) & " tests PASSED"
+
+End Sub
+
+Public Sub testListOfVersionForModule()
+    Dim list As Collection
+
+    Set list = getListOfVersionForModule("C_Soil")
+
+    Dim isOK As Boolean
+    isOK = False
+
+    If ( _
+        list.Count = 4 And _
+        list(1) = "1.0.0" And _
+        list(2) = "1.1.0" And _ 
+        list(3) = "2.0.0" And _ 
+        list(4) = "2.1.0" _
+     ) Then
+        Debug.Print "PASSED"
+    Else
+        Debug.Print "FAILED"
+    End If
+End Sub
+
+Public Sub testListFromPackageJson()
+    Dim list As Dictionary
+
+    Set list = getListFromPackageJson("C_Soil_Factory", "1.0.0")
+
+    Dim isOK As Boolean
+    isOK = False
+
+    If ( _
+        list.Count = 5 And _
+        list.Item("C_Math") = "1.*.*" And _
+        list.Item("C_Soil") = "2.*.*" And _
+        list.Item("C_Soil_Factory_Iterator") = "1.*.*" And _
+        list.Item("C_Soil_Database") = "1.*.*" And _
+        list.Item("C_Borehole") = "1.*.*" _
+     ) Then
+        Debug.Print "PASSED"
+    Else
+        Debug.Print "FAILED"
+    End If
+End Sub
+
+
+
+
+
+Public Sub test()
+
+    Debug.Print "TEST isRevisionCorrect"
+    Call testIsRevisionCorrect()
+    Debug.Print "----------------------"
+
+    Debug.Print "TEST isRevisionWithRuleCorrect"
+    Call testIsRevisionWithRuleCorrect()
+    Debug.Print "----------------------"
+
+    Debug.Print "TEST makeDictionaryRule"
+    Call testMakeDictionaryRule()
+    Debug.Print "----------------------"
+
+    Debug.Print "TEST isRevEqual"
+    Call testIsRevEqual()
+    Debug.Print "----------------------"
+
+    Debug.Print "TEST isRevBigger"
+    Call testIsRevBigger()
+    Debug.Print "----------------------"
+
+    Debug.Print "TEST isRevSmaller"
+    Call testIsRevSmaller()
+    Debug.Print "----------------------"
+
+    Debug.Print "TEST isRevBiggerOrEqual"
+    Call testIsRevBiggerOrEqual()
+    Debug.Print "----------------------"
+
+    Debug.Print "TEST isRevSmallerOrEqual"
+    Call testIsRevSmallerOrEqual()
+    Debug.Print "----------------------"
+
+    Debug.Print "TEST ListOfVersionForModule"
+    Call testListOfVersionForModule()
+    Debug.Print "----------------------"
+
+    Debug.Print "TEST ListFromPackageJson"
+    Call testListFromPackageJson()
+    Debug.Print "----------------------"
+
+End Sub
 
