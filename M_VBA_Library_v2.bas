@@ -111,7 +111,7 @@ On Error GoTo ErrorHandler
             intVer = CInt(strVer)
             
             If (Trim(CStr(intVer)) <> intVer) Or  (intVer < 0) Then
-               
+               Exit Function
             End If
         End If
     Next i
@@ -119,6 +119,101 @@ On Error GoTo ErrorHandler
     isRevisionCorrect = True
 
 ErrorHandler:
+End Function
+
+Private Function isRevisionWithRuleCorrect(rev As String) As Boolean
+
+    isRevisionWithRuleCorrect = False
+
+    Dim pos As Integer
+    Dim minPos As Integer
+    minPos = 1000
+
+    Dim allowedSymbols As Variant
+    allowedSymbols = Array("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "*")
+
+    Dim i As Integer
+    For i = LBound(allowedSymbols) To UBound(allowedSymbols)
+        pos = InStr(rev, allowedSymbols(i))
+        if pos > 0 And pos < minPos Then
+            minPos = pos
+        End If
+    Next i
+
+    If minPos = 1000 Then
+        Exit Function
+    End If
+
+    Dim rulePart As String
+    rulePart = Left(rev, minPos - 1)
+
+    Select Case rulePart
+        Case "", "=", ">", "<", ">=", "<="
+            
+        Case Else
+            Exit Function
+    End Select
+
+    Dim revPart As String
+    revPart = Mid(rev, minPos)
+
+    isRevisionWithRuleCorrect = isRevisionCorrect(revPart)
+
+End Function
+
+Private Function makeDictionaryRule(rev As String) As Dictionary
+    Dim result As New Dictionary
+
+    Dim allowedRules As Variant
+    allowedRules = Array(">=", "<=", "=", "<", ">")
+
+    Dim i As Integer
+    Dim pos As Integer
+    Dim revPart As String
+
+    For i = LBound(allowedRules) To UBound(allowedRules)
+        pos = InStr(rev, allowedRules(i))
+        if pos > 0  Then
+            result.Item("RULE") = allowedRules(i)
+            revPart = Mid(rev, Len(allowedRules(i))+1)
+            Exit For
+        End If
+    Next i
+
+    If pos = 0 Then
+        result.Item("RULE") = "="
+        revPart = rev
+    End if
+
+    Dim versionArray() As String
+    versionArray = Split(revPart,".")
+
+    result.Item("MAJOR") = versionArray(0)
+    result.Item("MINOR") = versionArray(1)
+    result.Item("PATCH") = versionArray(2)
+
+    Set makeDictionaryRule = result
+    Set result = Nothing
+End Function
+
+Private Function isRevEqual( _
+    majorOriginal As String, _
+    minorOriginal As String, _
+    patchOriginal As String, _
+    majorTest As String, _
+    minorTest As String, _
+    patchTest As String _
+)
+    If _
+        (majorOriginal = majorTest Or majorOriginal ="*" Or majorTest = "*") And _
+        (minorOriginal = minorTest Or minorOriginal ="*" Or minorTest = "*") And _
+        (patchOriginal = patchTest Or patchOriginal ="*" Or patchTest = "*") _
+    Then
+        isRevEqual = True
+    Else
+        isRevEqual = False
+    End If
+
 End Function
 
 Public Sub testIsRevisionCorrect()
@@ -147,6 +242,195 @@ Public Sub testIsRevisionCorrect()
     Dim varKey As variant
     For Each varKey In test.Keys
         if isRevisionCorrect(CStr(varKey)) = test.Item(varKey) Then
+            count = count + 1
+        Else   
+            Debug.Print "Test No." & Str(count + 1) & " - FAILED"
+
+            Debug.Print varKey
+            Debug.Print test.Item(varKey)
+            Exit Sub
+        End If
+    Next
+
+    Debug.Print Str(count) & " tests PASSED"
+
+End Sub
+
+Public Sub testIsRevisionWithRuleCorrect()
+    Dim count As Integer
+    count = 0
+
+    Dim test As New Dictionary
+
+    test.Item("1.2.3") = True
+    test.Item("=1.2.3") = True
+    test.Item(">1.2.3") = True
+    test.Item("<1.2.3") = True
+    test.Item(">=1.2.3") = True
+    test.Item("<=1.2.3") = True
+    test.Item("^1.2.3") = False
+    test.Item("A1.2.3") = False
+    test.Item("<<1.2.3") = False
+    test.Item("A1.2.3") = False
+    test.Item("<1.2.3<") = False
+    test.Item(">1.>2.3") = False
+    test.Item("1>1.2.3") = False
+    test.Item(">1,2.3") = False
+
+    
+
+    Dim varKey As variant
+    For Each varKey In test.Keys
+        if isRevisionWithRuleCorrect(CStr(varKey)) = test.Item(varKey) Then
+            count = count + 1
+        Else   
+            Debug.Print "Test No." & Str(count + 1) & " - FAILED"
+
+            Debug.Print varKey
+            Debug.Print test.Item(varKey)
+            Exit Sub
+        End If
+    Next
+
+    Debug.Print Str(count) & " tests PASSED"
+
+End Sub
+
+Public Sub testMakeDictionaryRule()
+    Dim count As Integer
+    count = 0
+
+    Dim correct1 As New Dictionary
+    correct1.Item("RULE") = "="
+    correct1.Item("MAJOR") = "1"
+    correct1.Item("MINOR") = "2"
+    correct1.Item("PATCH") = "3"
+
+    Dim correct2 As New Dictionary
+    correct2.Item("RULE") = "="
+    correct2.Item("MAJOR") = "1"
+    correct2.Item("MINOR") = "2"
+    correct2.Item("PATCH") = "3"
+
+    Dim correct3 As New Dictionary
+    correct3.Item("RULE") = ">"
+    correct3.Item("MAJOR") = "1"
+    correct3.Item("MINOR") = "2"
+    correct3.Item("PATCH") = "3"
+
+    Dim correct4 As New Dictionary
+    correct4.Item("RULE") = "<"
+    correct4.Item("MAJOR") = "1"
+    correct4.Item("MINOR") = "2"
+    correct4.Item("PATCH") = "3"
+
+    Dim correct5 As New Dictionary
+    correct5.Item("RULE") = ">="
+    correct5.Item("MAJOR") = "1"
+    correct5.Item("MINOR") = "2"
+    correct5.Item("PATCH") = "3"
+
+    Dim correct6 As New Dictionary
+    correct6.Item("RULE") = "<="
+    correct6.Item("MAJOR") = "1"
+    correct6.Item("MINOR") = "2"
+    correct6.Item("PATCH") = "3"
+
+    Dim correct7 As New Dictionary
+    correct7.Item("RULE") = "<="
+    correct7.Item("MAJOR") = "*"
+    correct7.Item("MINOR") = "*"
+    correct7.Item("PATCH") = "*"
+
+    Dim test As New Dictionary
+
+    Set test.Item("1.2.3") = correct1
+    Set test.Item("=1.2.3") = correct2
+    Set test.Item(">1.2.3") = correct3
+    Set test.Item("<1.2.3") = correct4
+    Set test.Item(">=1.2.3") = correct5
+    Set test.Item("<=1.2.3") = correct6
+    Set test.Item("<=*.*.*") = correct7
+    
+
+    Dim varKey As variant
+    Dim result As Dictionary
+    Dim major As String
+    Dim minor As String
+    Dim patch As String
+    Dim rule As String
+    For Each varKey In test.Keys
+
+        Set result = makeDictionaryRule(CStr(varKey))
+        rule = test.Item(varKey).Item("RULE")
+        major = test.Item(varKey).Item("MAJOR")
+        minor = test.Item(varKey).Item("MINOR")
+        patch = test.Item(varKey).Item("PATCH")
+
+        if _
+            result.Item("RULE") = rule And _
+            result.Item("MAJOR") = major And _
+            result.Item("MINOR") = minor And _
+            result.Item("PATCH") = patch _
+        Then
+            count = count + 1
+        Else   
+            Debug.Print "Test No." & Str(count + 1) & " - FAILED"
+
+            Debug.Print varKey
+            Exit Sub
+        End If
+    Next
+
+    Debug.Print Str(count) & " tests PASSED"
+
+    Set correct1 = Nothing
+    Set correct2 = Nothing
+    Set correct3 = Nothing
+    Set correct4 = Nothing
+    Set correct5 = Nothing
+    Set correct6 = Nothing
+    Set correct7 = Nothing
+    Set result = Nothing
+
+End Sub
+
+Public Sub testIsRevEqual()
+    Dim count As Integer
+    count = 0
+
+    Dim test As New Dictionary
+
+    test.Item("1.2.3|1.2.3") = True
+    test.Item("1.2.3|1.2.*") = True
+    test.Item("1.2.3|1.*.3") = True
+    test.Item("1.2.3|1.*.3") = True
+    test.Item("1.2.3|*.2.3") = True
+    test.Item("1.2.3|*.*.3") = True
+    test.Item("1.2.3|1.*.*") = True
+    test.Item("1.2.3|*.2.*") = True
+    test.Item("1.2.3|*.*.*") = True
+    test.Item("1.2.3|1.3.3") = False
+    test.Item("1.2.3|*.3.3") = False
+    test.Item("1.2.3|1.3.*") = False
+    test.Item("1.2.3|*.3.*") = False
+    test.Item("1.2.3|*.3.*") = False
+    
+
+    Dim varKey As variant
+    Dim revisions() As String
+    Dim originalRevs() As String
+    Dim testRevs() As String
+    For Each varKey In test.Keys
+
+        revisions = Split(CStr(varKey),"|")
+        originalRevs = Split(revisions(0),".")
+        testRevs = Split(revisions(1),".")
+
+        if isRevEqual( _
+            originalRevs(0), originalRevs(1), originalRevs(2), _
+            testRevs(0), testRevs(1), testRevs(2) _
+        ) = test.Item(varKey) Then
             count = count + 1
         Else   
             Debug.Print "Test No." & Str(count + 1) & " - FAILED"
