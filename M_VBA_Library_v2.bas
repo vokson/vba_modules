@@ -14,9 +14,8 @@ Public Sub import()
 
     Dim moduleName
     For Each moduleName In listOfAcceptedModules.Keys
-        Debug.Print moduleName & " [" & listOfAcceptedModules.Item(moduleName) & "]"
-    '     Version = listOfModules.Item(ModuleName)
-    '     Call importRequiredModule(CStr(ModuleName), Version)
+        'Debug.Print moduleName & " [" & listOfAcceptedModules.Item(moduleName) & "]"
+        Call importRequiredModule(CStr(ModuleName), listOfAcceptedModules.Item(moduleName))
     Next
 End Sub 
 
@@ -69,13 +68,7 @@ Private Sub importLibraryList(listOfRequiredModules As Dictionary, ByRef listOfA
 
         End If
 
-        'Call importRequiredModule(CStr(ModuleName), Version)
     Next
-    
-    ' For Each moduleName In listOfAcceptedModules.Keys
-    '     Version = listOfModules.Item(ModuleName)
-    '     Call importRequiredModule(CStr(ModuleName), Version)
-    ' Next
 
     Set rule = Nothing
     
@@ -91,7 +84,7 @@ Private Sub ImportModule(ModuleName As String, Version As String)
    Dim nameWithoutExtension As String
    nameWithoutExtension = Application.ActiveWorkbook.path & DIRECTORY_SEPARATOR & _
         FOLDER_WITH_VBA_MODULES & DIRECTORY_SEPARATOR & ModuleName & DIRECTORY_SEPARATOR & _
-        combineModuleNameWithVersion(ModuleName, Version)
+        Version & DIRECTORY_SEPARATOR & combineModuleNameWithVersion(ModuleName, Version)
    
    If Dir(nameWithoutExtension & ".bas") <> "" Then
         Application.VBE.ActiveVBProject.VBComponents.Import (nameWithoutExtension & ".bas")
@@ -135,7 +128,8 @@ Private Function isModuleExist(ModuleName As String, Version As String)
 End Function
 
 Private Function combineModuleNameWithVersion(ModuleName As String, Version As String) As String
-    combineModuleNameWithVersion = ModuleName & "_" & Version
+
+    combineModuleNameWithVersion = ModuleName & "_" & Replace(Version, ".", "_")
 End Function
 
 
