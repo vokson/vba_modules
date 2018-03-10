@@ -1,4 +1,4 @@
-Attribute VB_Name = "M_VBA_Library_List_v1"
+Attribute VB_Name = "M_VBA_Library_List_v2"
 Option Explicit
 
 Public Function getListOfRequiredModules() As Dictionary

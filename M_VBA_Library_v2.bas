@@ -4,17 +4,80 @@ Option Explicit
 Const FOLDER_WITH_VBA_MODULES = "vba_modules"
 Const DIRECTORY_SEPARATOR = "\"
 
-Public Sub importLibraryList()
+Public Sub import()
+    Dim listOfRequiredModules As Dictionary
+    Set listOfRequiredModules = getListOfRequiredModules()
 
-    Dim ModuleName
-    Dim Version As String
-    Dim listOfModules As Dictionary
-    Set listOfModules = getListOfRequiredModules()
-    
-    For Each ModuleName In listOfModules.Keys
-        Version = listOfModules.Item(ModuleName)
-        Call importRequiredModule(CStr(ModuleName), Version)
+    Dim listOfAcceptedModules As New Dictionary
+
+    Call importLibraryList(listOfRequiredModules, listOfAcceptedModules)
+
+    Dim moduleName
+    For Each moduleName In listOfAcceptedModules.Keys
+        Debug.Print moduleName & " [" & listOfAcceptedModules.Item(moduleName) & "]"
+    '     Version = listOfModules.Item(ModuleName)
+    '     Call importRequiredModule(CStr(ModuleName), Version)
     Next
+End Sub 
+
+Private Sub importLibraryList(listOfRequiredModules As Dictionary, ByRef listOfAcceptedModules As Dictionary)
+
+    Dim moduleName
+    Dim requiredRevision As String
+    Dim maxSatisfiedRevision As String
+    Dim rule As Dictionary
+    
+
+    ' Присваиваем вместо каждому ключу словаря вместо значения коллекцию
+    For Each moduleName In listOfRequiredModules.Keys
+        requiredRevision = listOfRequiredModules.Item(moduleName)
+
+        If Not isRevisionWithRuleCorrect(requiredRevision) Then
+            MsgBox "Версия " & requiredRevision & " для модуля " & moduleName & " некорректна"
+            End
+        End If
+
+        Set rule = makeDictionaryRule(requiredRevision)
+
+        If listOfAcceptedModules.Exists(moduleName) Then
+
+            If Not isRevisionSatisfyToRule(rule, listOfAcceptedModules.Item(moduleName)) Then
+                MsgBox "Найденная версия " & listOfAcceptedModules.Item(moduleName) & " для модуля " & _ 
+                 moduleName & " не удовлетворяет правилу " & requiredRevision
+                End
+            End If
+
+        Else
+
+            maxSatisfiedRevision = findMaxRevisionSatisfiedToRule(rule, CStr(moduleName))
+
+            If maxSatisfiedRevision = "" Then
+                MsgBox "Невозможно найти версию для модуля " & moduleName & _
+                    ", удовлетворяющую правилу " & requiredRevision
+                End
+            Else
+                listOfAcceptedModules.Item(moduleName) = maxSatisfiedRevision
+
+                Dim newRequiredModules As Dictionary
+
+                Set newRequiredModules = getListFromPackageJson(CStr(moduleName), maxSatisfiedRevision)
+                Call importLibraryList(newRequiredModules, listOfAcceptedModules)
+
+                Set newRequiredModules = Nothing
+
+            End If
+
+        End If
+
+        'Call importRequiredModule(CStr(ModuleName), Version)
+    Next
+    
+    ' For Each moduleName In listOfAcceptedModules.Keys
+    '     Version = listOfModules.Item(ModuleName)
+    '     Call importRequiredModule(CStr(ModuleName), Version)
+    ' Next
+
+    Set rule = Nothing
     
 End Sub
 
@@ -383,6 +446,79 @@ Private Function getListFromPackageJson(nameOfModule As String, versionOfModule 
 
     Set getListFromPackageJson = ParseJson(readFile(pathToPackageJson))
 
+End Function
+
+' rev - ревизия в корректном формате х.х.х
+Private Function isRevisionSatisfyToRule(rule As Dictionary, rev As String) As Boolean
+    Dim revArray() As String
+    revArray = Split(rev,".")
+
+    Select Case rule.Item("RULE")
+        Case "=" :
+            isRevisionSatisfyToRule = isRevEqual(rule.Item("MAJOR"), rule.Item("MINOR"), rule.Item("PATCH"), _
+                 revArray(0), revArray(1), revArray(2))
+            Exit Function
+        Case ">" :
+            isRevisionSatisfyToRule = isRevBigger(rule.Item("MAJOR"), rule.Item("MINOR"), rule.Item("PATCH"), _
+                 revArray(0), revArray(1), revArray(2))
+        Case "<" :
+            isRevisionSatisfyToRule = isRevSmaller(rule.Item("MAJOR"), rule.Item("MINOR"), rule.Item("PATCH"), _
+                 revArray(0), revArray(1), revArray(2))
+            Exit Function
+        Case ">=" :
+            isRevisionSatisfyToRule = isRevBiggerOrEqual(rule.Item("MAJOR"), rule.Item("MINOR"), rule.Item("PATCH"), _
+                 revArray(0), revArray(1), revArray(2))
+            Exit Function
+        Case "<=" :
+            isRevisionSatisfyToRule = isRevSmallerOrEqual(rule.Item("MAJOR"), rule.Item("MINOR"), rule.Item("PATCH"), _
+                 revArray(0), revArray(1), revArray(2))
+            Exit Function
+        Case Else:
+            MsgBox "isRevisionSatisfyToRule - Правило некорректно"
+            End
+    End Select
+    
+
+End Function
+
+Private Function findMaxRevisionSatisfiedToRule(rule As Dictionary, moduleName As String) As String
+    Dim listOfAvailableVersions As Collection
+    Set listOfAvailableVersions = getListOfVersionForModule(moduleName)
+
+    Dim i As Integer
+    For i = listOfAvailableVersions.Count To 1 Step -1
+        If Not isRevisionSatisfyToRule(rule, listOfAvailableVersions(i)) Then
+            listOfAvailableVersions.Remove i
+        End If
+    Next i
+
+    findMaxRevisionSatisfiedToRule = findMaxRevision(listOfAvailableVersions)
+
+    Set listOfAvailableVersions = Nothing
+
+End Function
+
+Private Function findMaxRevision(list As Collection) As String
+    findMaxRevision = ""
+
+    If list.count = 0 Then Exit Function
+
+    findMaxRevision = list(1)
+    If list.count = 1 Then Exit Function
+
+    Dim max() As String
+    Dim current() As String
+    max = Split(findMaxRevision,".")
+    
+    Dim i As Integer
+    For i = 2 To list.Count
+        current = Split(list(i), ".")
+        If isRevBigger(max(0), max(1), max(2), current(0), current(1), current(2)) Then
+            findMaxRevision = list(i)
+            max = Split(findMaxRevision,".")
+        End If
+    Next i
+    
 End Function
 
 
@@ -851,6 +987,44 @@ Public Sub testIsRevSmallerOrEqual()
 
 End Sub
 
+Public Sub testIsRevisionSatisfyToRule()
+    Dim count As Integer
+    count = 0
+
+    Dim test As New Dictionary
+
+    test.Item("1.2.3|1.2.3") = True
+    test.Item("=1.2.3|1.2.3") = True
+    test.Item(">=1.2.3|1.2.3") = True
+    test.Item(">=1.2.3|1.2.4") = True
+    test.Item("<=1.2.3|1.2.2") = True
+    test.Item("<=1.2.3|1.2.3") = True
+    test.Item(">1.2.3|1.2.4") = True
+    test.Item("<1.2.3|1.2.2") = True
+
+    Dim varKey As variant
+    Dim revisions() As String
+    Dim rule As Dictionary
+    For Each varKey In test.Keys
+
+        revisions = Split(CStr(varKey),"|")
+        Set rule = makeDictionaryRule(revisions(0))
+
+        If isRevisionSatisfyToRule(rule, revisions(1)) = test.Item(varKey) Then
+            count = count + 1
+        Else   
+            Debug.Print "Test No." & Str(count + 1) & " - FAILED"
+
+            Debug.Print varKey
+            Debug.Print test.Item(varKey)
+            Exit Sub
+        End If
+    Next
+
+    Debug.Print Str(count) & " tests PASSED"
+
+End Sub
+
 Public Sub testListOfVersionForModule()
     Dim list As Collection
 
@@ -894,8 +1068,61 @@ Public Sub testListFromPackageJson()
     End If
 End Sub
 
+Public Sub testFindMaxRevision()
+    Dim list As New Collection
+    list.Add "1.0.0"
+    list.Add "1.2.3"
+    list.Add "3.1.0"
+    list.Add "3.1.0"
+    list.Add "2.4.12"
 
+    If ( findMaxRevision(list) = "3.1.0") Then
+        Debug.Print "PASSED"
+    Else
+        Debug.Print "FAILED"
+    End If
 
+    Set list = Nothing
+End Sub
+
+Public Sub testFindMaxRevisionSatisfiedToRule()
+
+    Dim count As Integer
+    count = 0
+
+    Dim test As New Dictionary
+
+    test.Item("C_Soil|<2.0.0") = "1.1.0"
+    test.Item("C_Soil|<=2.0.0") = "2.0.0"
+    test.Item("C_Soil|*.*.*") = "2.1.0"
+    test.Item("C_Soil|>3.0.0") = ""
+    test.Item("C_Soil|1.1.0") = "1.1.0"
+
+    Dim varKey As variant
+    Dim inputs() As String
+    Dim rule As Dictionary
+    For Each varKey In test.Keys
+
+        inputs = Split(CStr(varKey),"|")
+        Set rule = makeDictionaryRule(inputs(1))
+
+        If findMaxRevisionSatisfiedToRule(rule, inputs(0)) = test.Item(varKey) Then
+            count = count + 1
+        Else   
+            Debug.Print "Test No." & Str(count + 1) & " - FAILED"
+
+            Debug.Print varKey
+            Debug.Print test.Item(varKey)
+            Exit Sub
+        End If
+    Next
+
+    Debug.Print Str(count) & " tests PASSED"
+
+    Set rule = Nothing
+    Set test = Nothing
+
+End Sub
 
 
 Public Sub test()
@@ -938,6 +1165,18 @@ Public Sub test()
 
     Debug.Print "TEST ListFromPackageJson"
     Call testListFromPackageJson()
+    Debug.Print "----------------------"
+
+    Debug.Print "TEST IsRevisionSatisfyToRule"
+    Call testIsRevisionSatisfyToRule()
+    Debug.Print "----------------------"
+
+    Debug.Print "TEST FindMaxRevision"
+    Call testFindMaxRevision()
+    Debug.Print "----------------------"
+
+    Debug.Print "TEST FindMaxRevisionSatisfiedToRule"
+    Call testFindMaxRevisionSatisfiedToRule()
     Debug.Print "----------------------"
 
 End Sub
