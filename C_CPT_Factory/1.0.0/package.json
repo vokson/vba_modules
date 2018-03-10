@@ -1,0 +1,7 @@
+{
+    "C_Borehole" : "1.*.*",
+	"C_CPT" : "1.*.*",
+	"C_CPT_Factory_Iterator" : "1.*.*",
+	"C_Soil_Database" : "1.*.*",
+	"C_Math" : "1.*.*"
+}
