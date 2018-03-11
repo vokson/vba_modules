@@ -20,4 +20,5 @@ Public Function getListOfRequiredModules() As Dictionary
     
     
     Set getListOfRequiredModules = dic
+    Set dic = Nothing
 End Function
