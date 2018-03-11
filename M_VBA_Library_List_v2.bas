@@ -12,8 +12,12 @@ Public Function getListOfRequiredModules() As Dictionary
     ' каждого модуля. При появлении новой зависимости, выбирается максимальная версия
     ' модуля, подходящего под правило. Эта версия проверяется также, если зависимость
     ' появляется повторно. Если версия не удовлетворяет новой зависимости, выдается ошибка
+    ' ПРИМЕР
+    ' dic.Item("C_Soil_Database") = "1.1.0"
+    ' dic.Item("C_Soil_Database") = ">=1.*.*"
+    ' dic.Item("C_Math") = "*.*.*"
+    ' и т.д.
     
-    dic.Item("C_Soil_Database") = "1.1.0"
     
     Set getListOfRequiredModules = dic
 End Function
