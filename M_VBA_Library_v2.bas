@@ -1119,7 +1119,7 @@ Public Sub testFindMaxRevisionSatisfiedToRule()
 End Sub
 
 
-Public Sub test()
+Public Sub M_VBA_Library_Test()
 
     Debug.Print "TEST isRevisionCorrect"
     Call testIsRevisionCorrect()
