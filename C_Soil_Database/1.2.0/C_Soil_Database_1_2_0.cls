@@ -69,7 +69,7 @@ Public Sub loadFromExcelSheet (sheet As Excel.Worksheet, rowWithNames As Integer
         "efh", "tfh", _
         "D", _
         "dfn", _
-        "TypeByFrostHeaving" _
+        "TypeByFrostHeaving", _
         "Ps" _
     )
 
