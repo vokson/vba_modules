@@ -315,11 +315,11 @@ Public Property Get SaturatedSoilDensity() As Double
             ) _
         ) Then
 
-        SaturatedSoilDensity_2 = (SolidParticlesDensity + waterDensity * VoidRatio) / (1 + VoidRatio)
+        SaturatedSoilDensity = (SolidParticlesDensity + waterDensity * VoidRatio) / (1 + VoidRatio)
 
     Else
 
-        SaturatedSoilDensity_2 = SoilDensity_2
+        SaturatedSoilDensity = SoilDensity
 
     End If
 End Property
