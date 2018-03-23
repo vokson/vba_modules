@@ -9,7 +9,7 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = True
 Option Explicit
 
-Const VERSION = "1.3.0"
+Const VERSION = "1.4.0"
 
 ' База данных грунтов в Excel
 Private pDatabase As Dictionary
