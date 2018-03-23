@@ -9,7 +9,7 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = True
 Option Explicit
 
-Const VERSION = "2.4.0"
+Const VERSION = "2.5.0"
 
 ' Дисперсный или мерзлый грунт с определением свойств по ГОСТ 25100-2011
 

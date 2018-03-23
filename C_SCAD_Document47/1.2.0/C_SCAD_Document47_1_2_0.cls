@@ -9,6 +9,8 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = True
 Option Explicit
 
+Const VERSION = "1.2.0"
+
 ' Make dictionary with groups of elements
 Function getGroups(s As String, Optional code As Integer = 47) As Dictionary
   Dim result As New Dictionary
