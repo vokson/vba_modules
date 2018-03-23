@@ -110,7 +110,7 @@ Private pFrozenDepth As Double ' Нормативная глубина промерзания - м
 Private pFrostHeaveRate As Double ' Степень морозной пучинистости - %
 Private pShearHeavingForce As Double' Касательная сила морозного пучения - кПа
 Private topSizeLimit, bottomSizeLimit, percentsBySize
-Private pSeismicCategory As String ' Категория грунта
+Private pSeismicCategory As Integer ' Категория грунта
 
 
 Private Sub Class_Initialize()
@@ -203,11 +203,11 @@ Public Function DeepCopy() As C_Soil
     Set DeepCopy = other
 End Function
 
-Public Property Get SeismicCategory() As String
+Public Property Get SeismicCategory() As Integer
     SeismicCategory = pSeismicCategory
 End Property
 
-Public Property Let SeismicCategory(value As String)
+Public Property Let SeismicCategory(value As Integer)
     pSeismicCategory = value
 End Property
 

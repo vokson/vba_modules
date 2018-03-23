@@ -130,6 +130,7 @@ Public Sub loadFromExcelSheet (sheet As Excel.Worksheet, rowWithNames As Integer
         soil.SeismicCategory = sheet.Cells(Row, columns("SeismicCategory"))
 
         Call addSoil(soil)
+        
 
         row = row + 1
     Loop
