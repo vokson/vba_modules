@@ -6,7 +6,7 @@ Attribute VB_Name = "C_ImprovedCollection"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
-Attribute VB_Exposed = False
+Attribute VB_Exposed = True
 '============================================
 ' Author: nerv
 ' Last Update: 25/07/2012
