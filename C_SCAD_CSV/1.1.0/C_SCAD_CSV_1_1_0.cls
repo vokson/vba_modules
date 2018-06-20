@@ -156,3 +156,48 @@ Public Function writeElements(col As C_ImprovedCollection, fileName As String) A
 Handler:
     Close #1
 End Function
+
+' (C_ImprovedCollection) col - Collection of Dictionary
+' (string) fileName - полный путь к файлу CSV
+' (boolean) result - успешна запись или нет
+
+' ѕишет описание стержневых элементов SCAD из Dictionary в файл CSV
+' ‘ормат словар€ 
+' (string) TEXT - им€ элемента
+' (long) TYPE_ELEM - тип элемента
+' (double) LOCAL_Z_ANGLE - угол поворота локальной оси Z в градусах
+' (string) RIGID_DESCRIPTION - описание типа жесткости в формате языка јрхивации SCAD
+' (Array of double) LIST_OF_NODES_COORDINATES - массив координат узлов в формате X1, Y1, Z1, X2, Y2, Z2, X3..
+
+Public Function writePedestals(col As C_ImprovedCollection, fileName As String) As Boolean
+
+    writePedestals = False
+
+    On Error GoTo Handler
+
+    Open fileName For Output As #1
+
+    Dim i As Long
+    Dim dic As Dictionary
+    Dim s As String
+    For i = 1 To col.Count
+        
+        Set dic = col(i)
+        s =  CStr(dic.Item("TEXT")) & ";" & _
+            CStr(dic.Item("TYPE_ELEM")) & ";" & _
+            CStr(dic.Item("LOCAL_Z_ANGLE"))  & ";" & _
+            CStr(dic.Item("RIGID_DESCRIPTION"))  & ";" & _
+            CStr(dic.Item("FOOTING_THICKNESS"))  & ";" & _
+            Join(dic.Item("LIST_OF_NODES_COORDINATES"), ";")
+
+        s = Replace(s, ",", ".")
+        Print #1, s
+           
+
+    Next i
+
+    writePedestals = True
+
+Handler:
+    Close #1
+End Function
