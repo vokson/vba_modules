@@ -201,3 +201,58 @@ Public Function writePedestals(col As C_ImprovedCollection, fileName As String) 
 Handler:
     Close #1
 End Function
+
+' (C_ImprovedCollection) col - Collection of Dictionary
+' (string) fileName - полный путь к файлу CSV
+' (boolean) result - успешна запись или нет
+
+' Пишет описание стержневых элементов SCAD из Dictionary в файл CSV
+' Формат словаря 
+' (string) TEXT - имя элемента
+' См. SCAD Plugin API функция GetArmElemRodPart
+
+Public Function writePedestalsReinforcement(col As C_ImprovedCollection, fileName As String) As Boolean
+
+    writePedestalsReinforcement = False
+
+    On Error GoTo Handler
+
+    Open fileName For Output As #1
+
+    Dim i As Long
+    Dim dic As Dictionary
+    Dim s As String
+    For i = 1 To col.Count
+
+        Set dic = col(i)
+        s =  CStr(dic.Item("TEXT")) & ";" & _
+            CStr(dic.Item("dS1L1_1")) & ";" & _
+            CStr(dic.Item("nS1L1_1")) & ";" & _
+            CStr(dic.Item("dS2L1_1")) & ";" & _
+            CStr(dic.Item("nS2L1_1")) & ";" & _
+            CStr(dic.Item("dS1L1_2")) & ";" & _
+            CStr(dic.Item("nS1L1_2")) & ";" & _
+            CStr(dic.Item("dS2L1_2")) & ";" & _
+            CStr(dic.Item("nS2L1_2")) & ";" & _
+            CStr(dic.Item("dS3L1_1")) & ";" & _
+            CStr(dic.Item("nS3L1_1")) & ";" & _
+            CStr(dic.Item("dS4L1_1")) & ";" & _
+            CStr(dic.Item("nS4L1_1")) & ";" & _
+            CStr(dic.Item("dSw")) & ";" & _
+            CStr(dic.Item("nSw")) & ";" & _
+            CStr(dic.Item("StepSw")) & ";" & _
+            CStr(dic.Item("dSw2")) & ";" & _
+            CStr(dic.Item("nSw2")) & ";" & _
+            CStr(dic.Item("StepSw2")) 
+
+        s = Replace(s, ",", ".")
+        Print #1, s
+           
+
+    Next i
+
+    writePedestalsReinforcement = True
+
+Handler:
+    Close #1
+End Function
