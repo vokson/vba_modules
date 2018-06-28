@@ -163,6 +163,111 @@ End Function
 
 ' Пишет описание стержневых элементов SCAD из Dictionary в файл CSV
 ' Формат словаря 
+' (long) NUM_ELEM
+' (string) TEXT - имя элемента
+' (long) TYPE_ELEM
+' (long) TYPE_RIGID
+' (long) NUM_INSERT
+' (long) NUM_SYS_COORD
+' (long) NUM_SYS_COORD_EFFORS
+' (long) NUM_BED
+' (Array of double) LIST_OF_NODES - массив номеров узлов, принадлежащих данному элементу
+
+Public Function readElements(col As C_ImprovedCollection, fileName As String) As Boolean
+
+    readElements = False
+
+    On Error GoTo Handler
+
+    Dim math As New C_Math
+    Dim result As New C_ImprovedCollection
+    Dim rowWithNames As String
+    Dim arrWithNames As Variant
+
+    Open fileName For Input As #1
+
+    ' Читаем первую строку с наименованиями столбцов
+    Line Input #1, rowWithNames
+    arrWithNames = Split(rowWithNames, ";")
+
+    ' Ищем индексы в массиве для нужных столбцов
+    Dim NumElem_index As Long
+    Dim Text_index As Long
+    Dim TypeElem_index As Long
+    Dim TypeRigid_index As Long
+    Dim NumInsert_index As Long
+    Dim NumSysCoord_index As Long
+    Dim NumSysCoordEffors_index As Long
+    Dim NumBed_index As Long
+    Dim QuantityNode_index As Long
+    Dim ListNode_index As Long
+
+    NumElem_index = math.findIdexOfValueInArray("NumElem", arrWithNames)
+    Text_index = math.findIdexOfValueInArray("Text", arrWithNames)
+    TypeElem_index = math.findIdexOfValueInArray("TypeElem", arrWithNames)
+    TypeRigid_index = math.findIdexOfValueInArray("TypeRigid", arrWithNames)
+    NumInsert_index = math.findIdexOfValueInArray("NumInsert", arrWithNames)
+    NumSysCoord_index = math.findIdexOfValueInArray("NumSysCoord", arrWithNames)
+    NumSysCoordEffors_index = math.findIdexOfValueInArray("NumSysCoordEffors", arrWithNames)
+    NumBed_index = math.findIdexOfValueInArray("NumBed", arrWithNames)
+    QuantityNode_index = math.findIdexOfValueInArray("QuantityNode", arrWithNames)
+    ListNode_index = math.findIdexOfValueInArray("ListNode", arrWithNames)
+
+    Dim text As String
+    Dim arr As Variant
+    Dim dic As Dictionary
+    Dim i As Long
+    Dim arrOfNodes() As Integer
+
+
+    Do While Not EOF(1)
+        Line Input #1, text
+        arr = Split(text, ";")
+
+        Set dic = New Dictionary
+
+        dic.Item("NUM_ELEM") = CLng(arr(NumElem_index))
+        dic.Item("TEXT") = CStr(arr(Text_index))
+        dic.Item("TYPE_ELEM") = CLng(arr(TypeElem_index))
+        dic.Item("TYPE_RIGID") = CLng(arr(TypeRigid_index))
+        dic.Item("NUM_INSERT") = CLng(arr(NumInsert_index))
+        dic.Item("NUM_SYS_COORD") = CLng(arr(NumSysCoord_index))
+        dic.Item("NUM_SYS_COORD_EFFORS") = CLng(arr(NumSysCoordEffors_index))
+        dic.Item("NUM_BED") = CLng(arr(QuantityNode_index))
+
+        Dim countOfNodes As Long
+        countOfNodes = CLng(arr(QuantityNode_index))
+        ReDim arrOfNodes(0)
+
+        For i = ListNode_index To ListNode_index + countOfNodes - 1
+            arrOfNodes(UBound(arrOfNodes)) = CLng(arr(i))
+            ReDim Preserve arrOfNodes(UBound(arrOfNodes) + 1)
+        Next i
+
+        ReDim Preserve arrOfNodes(UBound(arrOfNodes) - 1)
+
+        dic.Item("LIST_OF_NODES") = arrOfNodes
+
+        result.Add dic
+
+        Set dic = Nothing
+    Loop
+
+    Set col = result
+    
+    Set result = Nothing
+    readElements = True
+
+Handler:
+    Close #1
+End Function
+
+' (C_ImprovedCollection) col - Collection of Dictionary
+' (string) fileName - полный путь к файлу CSV
+' (boolean) result - успешна запись или нет
+
+' Пишет описание стержневых элементов SCAD из Dictionary в файл CSV
+' Формат словаря 
 ' (string) TEXT - имя элемента
 ' (long) TYPE_ELEM - тип элемента
 ' (double) LOCAL_Z_ANGLE - угол поворота локальной оси Z в градусах
