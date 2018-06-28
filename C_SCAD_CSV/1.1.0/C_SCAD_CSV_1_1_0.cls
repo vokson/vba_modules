@@ -307,7 +307,8 @@ Public Function readElements(col As C_ImprovedCollection, fileName As String) As
         dic.Item("NUM_INSERT") = CLng(arr(NumInsert_index))
         dic.Item("NUM_SYS_COORD") = CLng(arr(NumSysCoord_index))
         dic.Item("NUM_SYS_COORD_EFFORS") = CLng(arr(NumSysCoordEffors_index))
-        dic.Item("NUM_BED") = CLng(arr(QuantityNode_index))
+        dic.Item("NUM_BED") = CLng(arr(NumBed_index))
+        dic.Item("QUANTITY_NODE") = CLng(arr(QuantityNode_index))
 
         Dim countOfNodes As Long
         countOfNodes = CLng(arr(QuantityNode_index))
