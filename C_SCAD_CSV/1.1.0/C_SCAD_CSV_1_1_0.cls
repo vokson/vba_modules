@@ -161,6 +161,80 @@ End Function
 ' (string) fileName - полный путь к файлу CSV
 ' (boolean) result - успешна запись или нет
 
+' Пишет описание узлов SCAD из Dictionary в файл CSV
+' Формат словаря 
+' (long) NUM_NODE
+' (string) TEXT - имя элемента
+' (double) X
+' (double) Y
+' (double) Z
+
+Public Function readNodes(col As C_ImprovedCollection, fileName As String) As Boolean
+
+    readNodes = False
+
+    On Error GoTo Handler
+
+    Dim math As New C_Math
+    Dim result As New C_ImprovedCollection
+    Dim rowWithNames As String
+    Dim arrWithNames As Variant
+
+    Open fileName For Input As #1
+
+    ' Читаем первую строку с наименованиями столбцов
+    Line Input #1, rowWithNames
+    arrWithNames = Split(rowWithNames, ";")
+
+    ' Ищем индексы в массиве для нужных столбцов
+    Dim NumNode_index As Long
+    Dim Text_index As Long
+    Dim X_index As Long
+    Dim Y_index As Long
+    Dim Z_index As Long
+
+    NumNode_index = math.findIdexOfValueInArray("NumNode", arrWithNames)
+    Text_index = math.findIdexOfValueInArray("Text", arrWithNames)
+    X_index = math.findIdexOfValueInArray("x", arrWithNames)
+    Y_index = math.findIdexOfValueInArray("y", arrWithNames)
+    Z_index = math.findIdexOfValueInArray("z", arrWithNames)
+
+    Dim text As String
+    Dim arr As Variant
+    Dim dic As Dictionary
+    Dim i As Long
+
+
+    Do While Not EOF(1)
+        Line Input #1, text
+        arr = Split(text, ";")
+
+        Set dic = New Dictionary
+
+        dic.Item("NUM_NODE") = CLng(arr(NumNode_index))
+        dic.Item("TEXT") = CStr(arr(Text_index))
+        dic.Item("X") = CLng(arr(X_index))
+        dic.Item("Y") = CLng(arr(Y_index))
+        dic.Item("Z") = CLng(arr(Z_index))
+
+        result.Add dic
+
+        Set dic = Nothing
+    Loop
+
+    Set col = result
+    
+    Set result = Nothing
+    readNodes = True
+
+Handler:
+    Close #1
+End Function
+
+' (C_ImprovedCollection) col - Collection of Dictionary
+' (string) fileName - полный путь к файлу CSV
+' (boolean) result - успешна запись или нет
+
 ' Пишет описание стержневых элементов SCAD из Dictionary в файл CSV
 ' Формат словаря 
 ' (long) NUM_ELEM

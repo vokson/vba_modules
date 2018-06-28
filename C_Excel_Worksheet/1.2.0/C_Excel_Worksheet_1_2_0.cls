@@ -104,13 +104,20 @@ End Function
 ' (Excel.Worksheet) sheet - Объект листа
 ' (integer) rowWithNames - номер строки с именами столбцов
 ' (C_ImprovedCollection) col - исходная коллекция словарей
+' (boolean) isLastItemArray - является ли последний элемент массивом. Если да то, функция пишет все элементы
+'                               массива в ячейки правее
 ' (variant) namesInSheet - Массив (string) с именами необходимых столбцов, которые будут взяты из словаря
 ' (variant) namesInCollection - Массив (string) с именами ключей в словаре в случае, если они не совпадают
 '                               с ключами на листе
 ' LBound, UBound namesInSheet и namesInCollection должны совпадать
 
 Public Sub setCollectionOfRows(sheet As Excel.Worksheet, rowWithNames As Integer, col As C_ImprovedCollection, _
-                 namesInSheet As Variant, Optional namesInCollection As Variant = NULL) 
+                 isLastItemArray As Boolean, namesInSheet As Variant, Optional namesInCollection As Variant = NULL) 
+
+    Dim oldStatusBar As Boolean
+    oldStatusBar = Application.DisplayStatusBar 
+    Application.DisplayStatusBar = True 
+    Application.ScreenUpdating = False
 
     ' Ищем номера столбцов на листе, соответствующие namesInSheet
     Dim columnIndexInSheetArray() As Integer
@@ -139,14 +146,34 @@ Public Sub setCollectionOfRows(sheet As Excel.Worksheet, rowWithNames As Integer
 
     Dim dic As Dictionary
     Dim k As Integer
+    Dim j As Long
+    Dim c As Long
     For i = 1 To col.Count
+
+        Application.StatusBar = "Заполнение строк - " & CStr(Round(i/col.Count * 100)) & "%"
 
         Set dic = col(i)
 
-        For k = LBound(names) To UBound(names)
+        For k = LBound(names) To UBound(names)-1
             sheet.Cells(rowWithNames + i, columnIndexInSheetArray(k)) = dic.Item(names(k))
         Next k
 
+        If isLastItemArray = False Then
+            sheet.Cells(rowWithNames + i, columnIndexInSheetArray(k)) = dic.Item(names(k))
+        Else
+
+            c = 0
+            For j = LBound(dic.Item(names(k))) To UBound(dic.Item(names(k)))
+                sheet.Cells(rowWithNames + i, columnIndexInSheetArray(k ) + c) = dic.Item(names(k))(j)
+                c = c + 1
+            Next j
+
+        End If
+
     Next i
+
+    Application.StatusBar = False
+    Application.DisplayStatusBar = oldStatusBar
+    Application.ScreenUpdating = True
 
 End Sub
