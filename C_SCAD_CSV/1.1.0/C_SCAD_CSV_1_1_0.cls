@@ -213,9 +213,9 @@ Public Function readNodes(col As C_ImprovedCollection, fileName As String) As Bo
 
         dic.Item("NUM_NODE") = CLng(arr(NumNode_index))
         dic.Item("TEXT") = CStr(arr(Text_index))
-        dic.Item("X") = CLng(arr(X_index))
-        dic.Item("Y") = CLng(arr(Y_index))
-        dic.Item("Z") = CLng(arr(Z_index))
+        dic.Item("X") = CDbl(arr(X_index))
+        dic.Item("Y") = CDbl(arr(Y_index))
+        dic.Item("Z") = CDbl(arr(Z_index))
 
         result.Add dic
 
