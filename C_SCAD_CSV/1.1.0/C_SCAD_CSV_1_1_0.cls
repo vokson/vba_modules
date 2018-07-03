@@ -618,3 +618,79 @@ Public Function readSystemCoordElem(col As C_ImprovedCollection, fileName As Str
 Handler:
     Close #1
 End Function
+
+' (C_ImprovedCollection) col - Collection of Dictionary
+' (string) fileName - полный путь к файлу CSV
+' (boolean) result - успешна запись или нет
+
+' Пишет усилия от комбинаций загружений SCAD из Dictionary в файл CSV
+' Формат словаря 
+' (long) NUM_ELEM - номер элемента
+' (long) NUM_SYSTEM_COORD_ELEM - номер системы координат
+' (string) TEXT - имя элемента
+' (long) TYPE - тип системы координат
+' (long) QUANTITY_DATA - кол-во элементов описания типа системы координат
+' (Array of double) LIST_DATA - массив описаний
+
+Public Function readCombinationEfforts(col As C_ImprovedCollection, fileName As String) As Boolean
+
+    readCombinationEfforts = False
+
+    On Error GoTo Handler
+
+    Dim math As New C_Math
+    Dim result As New C_ImprovedCollection
+    Dim rowWithNames As String
+    Dim arrWithNames As Variant
+
+    Open fileName For Input As #1
+
+    ' Читаем первую строку с наименованиями столбцов
+    Line Input #1, rowWithNames
+    arrWithNames = Split(rowWithNames, ";")
+
+    ' Ищем индексы в массиве для нужных столбцов
+    Dim Element_index As Long
+    Dim Point_index As Long
+    Dim Combination_index As Long
+    Dim Efforts_index As Long
+
+    Element_index = math.findIdexOfValueInArray("Element", arrWithNames)
+    Point_index = math.findIdexOfValueInArray("Point", arrWithNames)
+    Combination_index = math.findIdexOfValueInArray("Combination", arrWithNames)
+    ' Вычисляем индекс, с которого начинаются усилия
+    Efforts_index = math.max(math.max(Element_index, Point_index), Combination_index) + 1
+
+    Dim text As String
+    Dim arr As Variant
+    Dim dic As Dictionary
+    Dim i As Long
+
+
+    Do While Not EOF(1)
+        Line Input #1, text
+        arr = Split(text, ";")
+
+        Set dic = New Dictionary
+
+        dic.Item("ELEMENT") = CLng(arr(Element_index))
+        dic.Item("POINT") = CLng(arr(Point_index))
+        dic.Item("COMBINATION") = CLng(arr(Combination_index))
+
+        For i = Efforts_index To UBound(arrWithNames)
+            dic.Item(CStr(arrWithNames(i))) = CDbl(arr(i))
+        Next i
+
+        result.Add dic
+
+        Set dic = Nothing
+    Loop
+
+    Set col = result
+    
+    Set result = Nothing
+    readCombinationEfforts = True
+
+Handler:
+    Close #1
+End Function
