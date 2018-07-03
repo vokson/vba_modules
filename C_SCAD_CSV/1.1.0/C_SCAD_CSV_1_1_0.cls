@@ -659,7 +659,7 @@ Public Function readCombinationEfforts(col As C_ImprovedCollection, fileName As 
     Point_index = math.findIdexOfValueInArray("Point", arrWithNames)
     Combination_index = math.findIdexOfValueInArray("Combination", arrWithNames)
     ' ¬ычисл€ем индекс, с которого начинаютс€ усили€
-    Efforts_index = math.max(math.max(Element_index, Point_index), Combination_index) + 1
+    Efforts_index = CLng(math.max(math.max(CDbl(Element_index), CDbl(Point_index)),CDbl( Combination_index))) + 1
 
     Dim text As String
     Dim arr As Variant

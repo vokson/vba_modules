@@ -111,7 +111,7 @@ End Function
 '                               с ключами на листе
 ' LBound, UBound namesInSheet и namesInCollection должны совпадать
 
-Public Sub setCollectionOfRows(sheet As Excel.Worksheet, rowWithNames As Integer, col As C_ImprovedCollection, _
+Public Sub setCollectionOfRows(sheet As Excel.Worksheet, writeByRange As Boolean, rowWithNames As Integer, col As C_ImprovedCollection, _
                  isLastItemArray As Boolean, namesInSheet As Variant, Optional namesInCollection As Variant = NULL) 
 
     Dim oldStatusBar As Boolean
@@ -148,26 +148,65 @@ Public Sub setCollectionOfRows(sheet As Excel.Worksheet, rowWithNames As Integer
     Dim k As Integer
     Dim j As Long
     Dim c As Long
+
+    Dim minIndex As Integer
+    Dim maxIndex As Integer
+    Dim valuesToBeWritten() As Variant
+
     For i = 1 To col.Count
 
         Application.StatusBar = "Заполнение строк - " & CStr(Round(i/col.Count * 100)) & "%"
 
         Set dic = col(i)
 
-        For k = LBound(names) To UBound(names)-1
-            sheet.Cells(rowWithNames + i, columnIndexInSheetArray(k)) = dic.Item(names(k))
-        Next k
+        If writeByRange = False Then
 
-        If isLastItemArray = False Then
-            sheet.Cells(rowWithNames + i, columnIndexInSheetArray(k)) = dic.Item(names(k))
-        Else
+            For k = LBound(names) To UBound(names)-1
+                sheet.Cells(rowWithNames + i, columnIndexInSheetArray(k)) = dic.Item(names(k))
+            Next k
 
-            c = 0
-            For j = LBound(dic.Item(names(k))) To UBound(dic.Item(names(k)))
-                sheet.Cells(rowWithNames + i, columnIndexInSheetArray(k ) + c) = dic.Item(names(k))(j)
-                c = c + 1
-            Next j
+            If isLastItemArray = False Then
+                sheet.Cells(rowWithNames + i, columnIndexInSheetArray(k)) = dic.Item(names(k))
+            Else
 
+                c = 0
+                For j = LBound(dic.Item(names(k))) To UBound(dic.Item(names(k)))
+                    sheet.Cells(rowWithNames + i, columnIndexInSheetArray(k ) + c) = dic.Item(names(k))(j)
+                    c = c + 1
+                Next j
+
+            End If
+
+        End If
+
+        ' Не должно быт пропусков между столбцами
+        If writeByRange = True Then
+
+            minIndex = Application.Min(columnIndexInSheetArray)
+            maxIndex = Application.Max(columnIndexInSheetArray)
+
+            ReDim valuesToBeWritten(0)
+
+            For k = LBound(names) To UBound(names)-1
+                valuesToBeWritten(UBound(valuesToBeWritten)) = dic.Item(names(k))
+                ReDim Preserve valuesToBeWritten(UBound(valuesToBeWritten)+1)
+            Next k
+
+            If isLastItemArray = False Then
+                valuesToBeWritten(UBound(valuesToBeWritten)) = dic.Item(names(k))
+            Else
+
+                For j = LBound(dic.Item(names(k))) To UBound(dic.Item(names(k)))
+                    valuesToBeWritten(UBound(valuesToBeWritten)) = dic.Item(names(k))(j)
+                    ReDim Preserve valuesToBeWritten(UBound(valuesToBeWritten)+1)
+                Next j
+
+                ReDim Preserve valuesToBeWritten(UBound(valuesToBeWritten)-1)
+
+            End If
+
+            sheet.Range(getSymbolOfColumn(minIndex) & (rowWithNames + i) & ":" & getSymbolOfColumn(maxIndex) & (rowWithNames + i) ) = valuesToBeWritten
+            ' TODO
         End If
 
     Next i
@@ -177,3 +216,7 @@ Public Sub setCollectionOfRows(sheet As Excel.Worksheet, rowWithNames As Integer
     Application.ScreenUpdating = True
 
 End Sub
+
+Private Function getSymbolOfColumn(index As Integer) As String
+    getSymbolOfColumn = ""
+End Function
