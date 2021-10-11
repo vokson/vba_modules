@@ -11,7 +11,7 @@ Option Explicit
 
 Const VERSION = "1.3.0"
 
-Public Function findColumnWithText(sheet As Excel.Worksheet, row As Integer, text As String) As Integer
+Public Function findColumnWithText(sheet As Excel.Worksheet, row As Long, text As String) As Long
 
     Dim Rng As Excel.Range
     Set Rng = sheet.Rows(row).Find(what:=text, LookIn:=xlValues, lookAt:=xlWhole, MatchCase:=True)
@@ -24,7 +24,7 @@ Public Function findColumnWithText(sheet As Excel.Worksheet, row As Integer, tex
     
 End Function
 
-Public Function findRowWithText(sheet As Excel.Worksheet, column As Integer, text As String) As Integer
+Public Function findRowWithText(sheet As Excel.Worksheet, column As Long, text As String) As Long
 
     Dim Rng As Excel.Range
     Set Rng = sheet.Columns(column).Find(what:=text, LookIn:=xlValues, lookAt:=xlWhole, MatchCase:=True)
@@ -36,6 +36,79 @@ Public Function findRowWithText(sheet As Excel.Worksheet, column As Integer, tex
     End If
     
 End Function
+
+' Функция формирует массив индексов столцов с необходимыми имена в заголовке таблицы
+' (Excel.Worksheet) sheet - Объект листа
+' (Long) rowWithNames - номер строки с именами столбцов
+' (variant) names - Массив (string) с именами необходимых столбцов. 
+Private Function getColumnIndexes( _
+    sheet As Excel.Worksheet, _
+    rowWithNames As Long, _
+    names As Variant _
+) As Long()
+
+    Dim columns() As Long
+    ReDim columns(LBound(names) To UBound(names))
+
+    Dim i As Long
+    For i=LBound(names) To UBound(names)
+        columns(i) = findColumnWithText(sheet, rowWithNames, CStr(names(i)))
+    Next i
+
+    getColumnIndexes = columns
+
+End Function
+
+' Функция формирует словарь из необходимых столбцов на листе Microsoft Excel для определенной строки
+' используя индексы необходимых столбцов
+' (Excel.Worksheet) sheet - Объект листа
+' (Long) row - номер строки с данными
+' (Long) columns - массив номеров столцов
+' (Variant) names -  массив (String) с именами столбцов 
+'      LBound, UBound names и columns должны совпадать
+
+Private Function getRowUsingIndexes( _
+    sheet As Excel.Worksheet, _
+    row As Long, _
+    columns() As Long, _
+    names As Variant _
+) As Dictionary
+
+    Dim dic As New Dictionary
+    Dim i As Long
+
+    For i = LBound(names) To UBound(names)
+        dic.Item(names(i)) = sheet.Cells(row, columns(i)).Value
+    Next i
+
+    Set getRowUsingIndexes = dic
+    Set dic = Nothing
+
+End Function
+
+' Функция формирует словарь из необходимых столбцов на листе Microsoft Excel для определенной строки
+' (Excel.Worksheet) sheet - Объект листа
+' (Long) rowWithNames - номер строки с именами столбцов
+' (Long) rowWithData - номер строки с данными
+' (variant) names - Массив (string) с именами необходимых столбцов. 
+' (variant) newNames - Массив (string) с новыми именами ключей в создаваемых словарях на случай,
+'                   если они не должны совпадать с исходными именами столбцов
+'                   LBound, UBound names и newNames должны совпадать
+
+Public Function getRow(sheet As Excel.Worksheet, rowWithNames As Long, rowWithData As Long, _
+                 names As Variant, Optional newNames As Variant = NULL) As Dictionary
+
+    Dim columns() As Long
+    columns = getColumnIndexes(sheet, rowWithNames, names)
+
+    if IsNull(newNames) Then
+        Set getRow = getRowUsingIndexes(sheet, rowWithData, columns, names)
+    Else
+        Set getRow = getRowUsingIndexes(sheet, rowWithData, columns, newNames)
+    End If
+
+End Function
+
 
 ' Функция формирует Collection словарей из необходимых столбцов/строк на листе Microsoft Excel
 ' (Excel.Worksheet) sheet - Объект листа
@@ -104,7 +177,7 @@ End Function
 ' Между столбцами не должно быть пропусков
 '
 ' (Excel.Worksheet) sheet - Объект листа
-' (integer) rowWithNames - номер строки с именами столбцов
+' (Long) rowWithNames - номер строки с именами столбцов
 ' (C_ImprovedCollection) col - исходная коллекция словарей
 ' (boolean) isLastItemArray - является ли последний элемент массивом. Если да то, функция пишет все элементы
 '                               массива в ячейки правее
@@ -113,7 +186,7 @@ End Function
 '                               с ключами на листе
 ' LBound, UBound namesInSheet и namesInCollection должны совпадать
 
-Public Sub setCollectionOfRowsUsingRange(sheet As Excel.Worksheet, rowWithNames As Integer, col As C_ImprovedCollection, _
+Public Sub setCollectionOfRowsUsingRange(sheet As Excel.Worksheet, rowWithNames As Long, col As C_ImprovedCollection, _
                  isLastItemArray As Boolean, namesInSheet As Variant, Optional namesInCollection As Variant = NULL) 
 
     Dim oldStatusBar As Boolean
@@ -125,11 +198,11 @@ Public Sub setCollectionOfRowsUsingRange(sheet As Excel.Worksheet, rowWithNames 
     StartTime = Timer
 
     ' Ищем номера столбцов на листе, соответствующие namesInSheet
-    Dim columnIndexInSheetArray() As Integer
+    Dim columnIndexInSheetArray() As Long
     ReDim Preserve columnIndexInSheetArray(LBound(namesInSheet) To UBound(namesInSheet))
 
     Dim i As Long
-    Dim columnIndex As Integer
+    Dim columnIndex As Long
     For i = LBound(namesInSheet) To UBound(namesInSheet)
 
         columnIndex = findColumnWithText(sheet, rowWithNames, CStr(namesInSheet(i)))
@@ -150,14 +223,14 @@ Public Sub setCollectionOfRowsUsingRange(sheet As Excel.Worksheet, rowWithNames 
     End If
 
     Dim dic As Dictionary
-    Dim k As Integer
+    Dim k As Long
     Dim j As Long
     Dim c As Long
-    Dim minIndex As Integer
+    Dim minIndex As Long
     Dim valuesToBeWritten() As Variant
     Dim minCell As String
-    Dim countOfColumns As Integer
-    Dim countInArray As Integer, maxCountInArray As Integer
+    Dim countOfColumns As Long
+    Dim countInArray As Long, maxCountInArray As Long
     Dim dicArr As Variant
 
     ' Рассчитываем кол-во элементов в строке
@@ -221,7 +294,7 @@ Public Sub setCollectionOfRowsUsingRange(sheet As Excel.Worksheet, rowWithNames 
     minCell = sheet.Cells(rowWithNames + 1, minIndex).Address(False, False)
     sheet.Range(minCell).Resize(UBound(valuesToBeWritten, 1), UBound(valuesToBeWritten, 2)).Value  = valuesToBeWritten
 
-    Debug.Print "setCollectionOfRowsUsingRange - " & Round(Timer - StartTime, 2) & " seconds", vbInformation
+    ' Debug.Print "setCollectionOfRowsUsingRange - " & Round(Timer - StartTime, 2) & " seconds", vbInformation
 
     Application.StatusBar = False
     Application.DisplayStatusBar = oldStatusBar
@@ -232,7 +305,7 @@ End Sub
 
 ' Функция заполняет необходимые столбцы/строки из словарей в Collection на листе Microsoft Excel, используя Cells
 ' (Excel.Worksheet) sheet - Объект листа
-' (integer) rowWithNames - номер строки с именами столбцов
+' (Long) rowWithNames - номер строки с именами столбцов
 ' (C_ImprovedCollection) col - исходная коллекция словарей
 ' (boolean) isLastItemArray - является ли последний элемент массивом. Если да то, функция пишет все элементы
 '                               массива в ячейки правее
@@ -240,9 +313,13 @@ End Sub
 ' (variant) namesInCollection - Массив (string) с именами ключей в словаре в случае, если они не совпадают
 '                               с ключами на листе
 ' LBound, UBound namesInSheet и namesInCollection должны совпадать
+' (Long) rowStartFrom - номер строки, с которой нужно начинать запись на лист 
 
-Public Sub setCollectionOfRowsUsingCells(sheet As Excel.Worksheet, rowWithNames As Integer, col As C_ImprovedCollection, _
-                 isLastItemArray As Boolean, namesInSheet As Variant, Optional namesInCollection As Variant = NULL) 
+Public Sub setCollectionOfRowsUsingCells(sheet As Excel.Worksheet, rowWithNames As Long, col As C_ImprovedCollection, _
+                isLastItemArray As Boolean, namesInSheet As Variant, Optional namesInCollection As Variant = NULL, _
+                Optional rowStartFrom As Long = 0) 
+
+    On Error Goto Handler
 
     Dim oldStatusBar As Boolean
     oldStatusBar = Application.DisplayStatusBar 
@@ -253,11 +330,11 @@ Public Sub setCollectionOfRowsUsingCells(sheet As Excel.Worksheet, rowWithNames 
     StartTime = Timer
 
     ' Ищем номера столбцов на листе, соответствующие namesInSheet
-    Dim columnIndexInSheetArray() As Integer
+    Dim columnIndexInSheetArray() As Long
     ReDim Preserve columnIndexInSheetArray(LBound(namesInSheet) To UBound(namesInSheet))
 
     Dim i As Long
-    Dim columnIndex As Integer
+    Dim columnIndex As Long
     For i = LBound(namesInSheet) To UBound(namesInSheet)
 
         columnIndex = findColumnWithText(sheet, rowWithNames, CStr(namesInSheet(i)))
@@ -278,9 +355,16 @@ Public Sub setCollectionOfRowsUsingCells(sheet As Excel.Worksheet, rowWithNames 
     End If
 
     Dim dic As Dictionary
-    Dim k As Integer
+    Dim k As Long
     Dim j As Long
     Dim c As Long
+
+    Dim row As Long
+    if rowStartFrom > 0 Then
+        row = rowStartFrom - 1 
+    Else
+        row = rowWithNames
+    End If
 
     For i = 1 To col.Count
 
@@ -289,35 +373,93 @@ Public Sub setCollectionOfRowsUsingCells(sheet As Excel.Worksheet, rowWithNames 
         Set dic = col(i)
 
         For k = LBound(names) To UBound(names)-1
-            sheet.Cells(rowWithNames + i, columnIndexInSheetArray(k)) = dic.Item(names(k))
+            sheet.Cells(row + i, columnIndexInSheetArray(k)) = dic.Item(names(k))
         Next k
 
         If isLastItemArray = False Then
-            sheet.Cells(rowWithNames + i, columnIndexInSheetArray(k)) = dic.Item(names(k))
+            sheet.Cells(row + i, columnIndexInSheetArray(k)) = dic.Item(names(k))
         Else
 
             c = 0
             For j = LBound(dic.Item(names(k))) To UBound(dic.Item(names(k)))
-                sheet.Cells(rowWithNames + i, columnIndexInSheetArray(k ) + c) = dic.Item(names(k))(j)
+                sheet.Cells(row + i, columnIndexInSheetArray(k ) + c) = dic.Item(names(k))(j)
                 c = c + 1
             Next j
 
         End If
     Next i
 
-    Debug.Print "setCollectionOfRowsUsingCells - " & Round(Timer - StartTime, 2) & " seconds", vbInformation
+    ' Debug.Print "setCollectionOfRowsUsingCells - " & Round(Timer - StartTime, 2) & " seconds", vbInformation
 
     Application.StatusBar = False
     Application.DisplayStatusBar = oldStatusBar
     Application.ScreenUpdating = True
+    Exit Sub
+
+    Handler:
+    Application.ScreenUpdating = True
+    MsgBox "Error during writing to Excel Worksheet '" & sheet.name & "'"
 
 End Sub
 
+' Функция проверяет пустые ли столбцы/строки
+' (Excel.Worksheet) sheet - Объект листа
+' (Long) rowWithNames - номер строки с именами столбцов
+' (variant) namesInSheet - Массив (string) с именами необходимых столбцов
+' (Long) rowStartFrom - номер строки, с которой нужно начинать проверку
+' (Long) countOfRows - кол-во строк, которое необходимо проверить
+
+Public Function checkIfRowsEmpty( _
+    sheet As Excel.Worksheet, _
+    rowWithNames As Long, _
+    namesInSheet As Variant, _
+    rowStartFrom As Long, _
+    countOfRows As Long _
+) As Boolean
+
+    On Error Goto Handler
+
+    ' Ищем номера столбцов на листе, соответствующие namesInSheet
+    Dim columnIndexInSheetArray() As Long
+    ReDim Preserve columnIndexInSheetArray(LBound(namesInSheet) To UBound(namesInSheet))
+
+    Dim i As Long
+    Dim k As Long
+    Dim columnIndex As Long
+
+    For i = LBound(namesInSheet) To UBound(namesInSheet)
+
+        columnIndex = findColumnWithText(sheet, rowWithNames, CStr(namesInSheet(i)))
+        
+        If columnIndex = 0 Then
+            MsgBox "Столбец с именем " & namesInSheet(i) & " не найден !!!"
+            GoTo Handler
+        End If
+
+        columnIndexInSheetArray(i) = columnIndex
+    Next i
+
+    For i = rowStartFrom To rowStartFrom + countOfRows
+        For k = LBound(namesInSheet) To UBound(namesInSheet)
+            if Not IsEmpty(sheet.Cells(i, columnIndexInSheetArray(k))) Then
+                Goto Handler
+            End If
+        Next k
+    Next i
+
+    checkIfRowsEmpty = True
+    Exit Function
+
+    Handler:
+        checkIfRowsEmpty = False
+
+End Function
+
 ' Формируем словарь ключ-значение из листа
 ' (Excel.Worksheet) sheet - Объект листа
-' (integer) rowWithNames - номер строки с именами столбцов
-' (integer) colWithKeys - номер колонки с ключами словаря
-' (integer) colWithValues - номер колонки со значениями словаря
+' (Long) rowWithNames - номер строки с именами столбцов
+' (Long) colWithKeys - номер колонки с ключами словаря
+' (Long) colWithValues - номер колонки со значениями словаря
 Public Function getKeyValueDictionary(sheet As Excel.Worksheet, rowWithNames As Long, _ 
                 colWithKeys As Long, colWithValues As Long) As Dictionary
     

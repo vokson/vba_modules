@@ -1,3 +1,4 @@
 {
-    "C_ImprovedCollection" : "1.*.*"
+    "C_ImprovedCollection" : "1.*.*",
+    "M_File" : "2.*.*"
 }
