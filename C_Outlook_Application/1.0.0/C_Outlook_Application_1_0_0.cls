@@ -12,10 +12,12 @@ Option Explicit
 Const VERSION = "1.0.0"
 
 Private m_outlookApp As Object
+Private clsFile As Object
   
 Private Sub Class_Initialize() 
   On Error Resume Next
 
+  Set clsFile = New C_File
   Set m_outlookApp = GetObject(, "Outlook.Application")
   
   If TypeName(m_outlookApp) = "Nothing" Then
@@ -71,7 +73,7 @@ Public Function isEmbeddedAttachment(att As Attachment) As Boolean
     Const PR_ATTACH_CONTENT_ID = "http://schemas.microsoft.com/mapi/proptag/0x3712001F"
 
     Dim ext As String
-    ext = LCase(getExtensionOfFile(att.FileName))
+    ext = LCase(clsFile.getExtensionOfFile(att.FileName))
     if Not( _
         ext = "bmp" Or ext = "jpg" Or ext = "jpeg" Or _
         ext = "png" Or ext = "tif" Or ext = "tiff" Or _
