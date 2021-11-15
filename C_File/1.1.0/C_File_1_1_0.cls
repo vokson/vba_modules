@@ -123,6 +123,22 @@ Public Function readFile(fullPath As String) As String
     JsonTS.Close
 End Function
 
+Public Function readUtf8File(path As String) As String
+    Dim objStream, strData
+
+    Set objStream = CreateObject("ADODB.Stream")
+
+    objStream.CharSet = "utf-8"
+    objStream.Open
+    objStream.LoadFromFile(path)
+
+    readUtf8File = objStream.ReadText()
+
+    objStream.Close
+    Set objStream = Nothing
+
+End Function
+
 Public Sub copyFile(source As String, destination As String)
     Dim fso As Object
     Set fso = VBA.CreateObject("Scripting.FileSystemObject")
@@ -163,6 +179,7 @@ Public Function getFileSize(path As String) As Long
     Set fs = CreateObject("Scripting.FileSystemObject")
     Set f = fs.GetFile(path)
     getFileSize = f.size
+    Exit Function
 
 Handler:
     getFileSize = 0
