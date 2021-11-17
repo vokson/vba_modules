@@ -40,7 +40,8 @@ Public Function GetSelectedLetters() As C_ImprovedCollection
   Dim message As Object
 
   For Each message In m_outlookApp.ActiveExplorer.Selection
-    If message.Class = olMail Then
+    ' 43 = olMail
+    If message.Class = 43 Then
       GetSelectedLetters.Add message
     End If
   Next
@@ -88,9 +89,7 @@ Public Function isEmbeddedAttachment(att As Object) As Boolean
         Exit Function
     End If
 
-    Dim PropAccessor As PropertyAccessor
+    Dim PropAccessor As Object ' PropertyAccessor
     Set PropAccessor = Att.PropertyAccessor
     isEmbeddedAttachment = (PropAccessor.GetProperty(PR_ATTACH_CONTENT_ID) <> "")
 End Function
-
-
