@@ -30,6 +30,12 @@ Public Function getFileName(path As String) As String
     End With
 End Function
 
+Public Function getParentFolderName(path As String) As String
+    With CreateObject("Scripting.FileSystemObject")
+        getParentFolderName = .GetParentFolderName(path)
+    End With
+End Function
+
 Public Sub writeFileInUnicode(fullPath As String, text As String)
     Dim fs, a
     
